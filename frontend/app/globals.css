@@ -1,15 +1,15 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-    --color-primary: #2D4059;
-    --color-accent: #ff5722;
-    --color-secondary: #eeeeee;
+  --color-primary: #2d4059;
+  --color-accent: #ff5722;
+  --color-secondary: #eeeeee;
 }
 
 @theme inline {
-    --font-work: var(--font-work-sans), "Inter", sans-serif;
+  --font-work: var(--font-work-sans), 'Inter', sans-serif;
 }
 
 body {
-    @apply text-primary font-work;
+  @apply text-primary font-work;
 }
