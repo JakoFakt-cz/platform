@@ -1,51 +1,32 @@
 {
-  "name": "jakofakt",
+  "name": "platform",
   "version": "1.0.0-SNAPSHOT",
-  "description": "Centralized mono-repo hosting the API and web clients for seamless development and deployment.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "run-concurrently dev"
-  },
-  "concurrentTasks": {
-    "dev": {
-      "subTasks": [
-        {
-          "workingDirectory": "./frontend",
-          "command": "bun dev",
-          "name": "Frontend"
-        },
-        {
-          "workingDirectory": "./backend",
-          "command": "bun start:dev",
-          "name": "Backend"
-        }
-      ]
-    }
-  },
-  "author": "JakoFakt Development",
-  "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JakoFakt-cz/jakofakt.git"
+    "url": "git+https://github.com/JakoFakt-cz/platform.git"
   },
-  "bugs": {
-    "url": "https://github.com/JakoFakt-cz/jakofakt/issues"
-  },
-  "homepage": "https://github.com/JakoFakt-cz/jakofakt#readme",
-  "private": true,
+  "main": "index.js",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "turbo": "^2.5.8"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
+  "bugs": {
+    "url": "https://github.com/JakoFakt-cz/platform/issues"
+  },
+  "description": "Centralized mono-repo hosting the API and web clients for seamless development and deployment.",
+  "homepage": "https://github.com/JakoFakt-cz/platform#readme",
+  "license": "AGPL-3.0-only",
+  "packageManager": "bun@1.2.0",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "turbo dev"
+  },
   "workspaces": [
     "frontend",
     "backend"
-  ],
-  "dependencies": {
-    "@gnoesiboe/run-concurrently": "^3.0.3",
-    "run-concurrently": "^1.0.0"
-  }
+  ]
 }

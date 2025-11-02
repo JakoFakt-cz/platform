@@ -1,12 +1,13 @@
 {
-  "name": "web",
+  "name": "frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
@@ -15,15 +16,17 @@
     "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/bun": "latest",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
-    "@eslint/eslintrc": "^3",
-    "@types/bun": "latest"
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "3.6.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
