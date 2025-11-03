@@ -15,18 +15,20 @@ const Menu = () => {
           'w-11/12 h-14 px-6 flex flex-row items-center justify-between bg-secondary/85 rounded-2xl backdrop-blur-sm shadow-lg/12 shadow-text-primary'
         }
       >
-        <nav className={'flex flex-row items-center gap-4'}>
+        <nav className={'flex flex-row items-center gap-8'}>
           <Link href={'/'}>
             <Image
               src={'/logo/logo-light.svg'}
               alt={'Logo projektu světlé'}
-              width={180}
+              width={120}
               height={90}
             />
           </Link>
-          <MenuItem label={'Nejnovější'} isMulti />
-          <MenuItem label={'O projektu'} isMulti />
-          <MenuItem label={'Záložka'} isMulti />
+          <div className={"flex flex-row items-center gap-4"}>
+            <MenuItem label={'Nejnovější'} isMulti />
+            <MenuItem label={'O projektu'} isMulti />
+            <MenuItem label={'Záložka'} isMulti />
+          </div>
         </nav>
         <div>
           <SecondaryButton

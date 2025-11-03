@@ -11,5 +11,5 @@
 }
 
 body {
-  @apply text-primary font-work;
+  @apply text-primary font-work bg-secondary;
 }
