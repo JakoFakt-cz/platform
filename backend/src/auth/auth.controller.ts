@@ -9,8 +9,28 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup') //auth/signup
-  async signUp(@Body() signupData: SignupDto) {
-    return this.authService.signup(signupData);
+  async signUp(@Body() signupData: SignupDto, @Res({ passthrough: true }) response: Response) {
+    await this.authService.signup(signupData);
+
+    const { accessToken, refreshToken } = await this.authService.login({
+      email: signupData.email,
+      password: signupData.password,
+    });
+
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 14);
+
+    response.cookie('jako_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: expiryDate,
+      path: '/auth/refresh',
+    });
+
+    return {
+      accessToken,
+    };
   }
 
   @Post('login') //auth/login
