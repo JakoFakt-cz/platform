@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/user.schema';
@@ -94,11 +90,12 @@ export class AuthService {
 
   private async storeRefreshToken(token: string, userId: Types.ObjectId) {
     const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 7);
+    expiryDate.setDate(expiryDate.getDate() + 14);
 
     await this.RefreshTokenModel.create({
       token,
       userId: userId.toString(),
+      expiryDate,
     });
   }
 }
