@@ -34,7 +34,7 @@ import config from './config/config';
 
     AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, ArticleController, ArticleController],
+  providers: [AppService, ArticleService],
 })
 export class AppModule {}

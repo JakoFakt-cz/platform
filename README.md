@@ -12,6 +12,7 @@ Frontend & Backend Monorepo built using Bun, Turborepo, Next.js and Nest.js
 [Repository Structure](#-repository-structure)
 [Testing & Deployment](#-how-to-test--deploy)
 [Contributing](#-contributing)
+[License](#-license)
 
 ---
 
