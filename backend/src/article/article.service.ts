@@ -7,20 +7,12 @@ import { Model } from 'mongoose';
 export class ArticleService {
   constructor(@InjectModel(Article.name) private model: Model<Article>) {}
 
-  async createArticle(
-    title: string,
-    authorId: string,
-    body: string,
-  ): Promise<Article> {
+  async createArticle(title: string, authorId: string, body: string): Promise<Article> {
     const created = new this.model({ title, authorId, body });
     return created.save();
   }
 
-  async getArticles(
-    limit?: number,
-    latest?: boolean,
-    authorId?: string,
-  ): Promise<Article[]> {
+  async getArticles(limit?: number, latest?: boolean, authorId?: string): Promise<Article[]> {
     const filter: Record<string, any> = {};
 
     if (authorId) {

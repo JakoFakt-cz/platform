@@ -6,6 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import config from './config/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ArticleController } from './article/article.controller';
+import { ArticleService } from './article/article.service';
 
 @Module({
   imports: [
@@ -31,6 +34,13 @@ import config from './config/config';
       global: true,
       inject: [ConfigService],
     }),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
 
     AuthModule,
   ],
