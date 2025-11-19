@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { Article } from './scheme/article.schema';
+import { Article } from './schema/article.schema';
 import { ArticleService } from './article.service';
-import { CreateArticleDto } from './dto/createarticledto.dto';
-import { GetArticlesDto } from './dto/getarticlesdto.dto';
+import { CreateArticleDto } from './dto/createArticle.dto';
+import { GetArticlesDto } from './dto/getArticles.dto';
 
 @Controller('articles')
 export class ArticleController {

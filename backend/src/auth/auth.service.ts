@@ -6,7 +6,7 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshToken } from './refreshToken.schema';
+import { RefreshToken } from './schema/refreshToken.schema';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
