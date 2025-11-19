@@ -3,12 +3,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import config from './config/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ArticleController } from './article/article.controller';
-import { ArticleService } from './article/article.service';
+
+import { AuthModule } from './auth/auth.module';
+import { ArticleModule } from './article/article.module';
 
 @Module({
   imports: [
@@ -43,8 +43,10 @@ import { ArticleService } from './article/article.service';
     ]),
 
     AuthModule,
+
+    ArticleModule,
   ],
-  controllers: [AppController, ArticleController, ArticleController],
-  providers: [AppService, ArticleService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
