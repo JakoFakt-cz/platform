@@ -38,16 +38,14 @@ export class AuthController {
   @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Post('login') //auth/login
   async login(@Body() loginData: LoginDto, @Res({ passthrough: true }) response: Response) {
-    const { accessToken, refreshToken } = await this.authService.login(loginData);
-
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 14);
+    const { accessToken, refreshToken, refreshTokenExpiry } =
+      await this.authService.login(loginData);
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      expires: expiryDate,
+      expires: refreshTokenExpiry,
       path: '/auth/refresh',
     });
 

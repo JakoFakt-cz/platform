@@ -29,7 +29,7 @@ import { ArticleModule } from './article/article.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('jwt.secret'),
+        secret: configService.get('auth.jwtSecret'),
       }),
       global: true,
       inject: [ConfigService],
