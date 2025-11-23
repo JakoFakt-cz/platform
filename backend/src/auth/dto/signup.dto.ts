@@ -1,8 +1,13 @@
-import { IsEmail, IsString, Matches, MinLength, MaxLength } from 'class-validator';
+import { IsEmail, IsString, Matches, MinLength, MaxLength, IsLowercase } from 'class-validator';
 
 export class SignupDto {
   @IsString()
+  @IsLowercase()
   @MinLength(2)
+  @MaxLength(32)
+  @Matches(/^[a-z0-9_.]+$/, {
+    message: 'Username can only contain lowercase letters, numbers, underscores, and periods.',
+  })
   username: string;
 
   @IsString()
