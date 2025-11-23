@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -76,5 +76,12 @@ export class AuthController {
     return {
       accessToken,
     };
+  }
+
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Get('check-username') //auth/check-username
+  async checkUsername(@Query('username') username: string) {
+    const isAvailable = await this.authService.isUsernameAvailable(username);
+    return { isAvailable };
   }
 }

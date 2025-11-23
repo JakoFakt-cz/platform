@@ -91,6 +91,19 @@ export class AuthService {
     return this.generateUserTokens(storedToken.userId);
   }
 
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    if (!username) {
+      return false;
+    }
+
+    if (username.length < 2 || username.length > 32) {
+      return false;
+    }
+
+    const exists = await this.UserModel.findOne({ username }).select('_id').lean().exec();
+    return !exists;
+  }
+
   private async generateUserTokens(userId: Types.ObjectId) {
     const accessTokenExpiration =
       this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
