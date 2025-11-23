@@ -7,8 +7,8 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schema/refreshToken.schema';
-import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -77,8 +77,10 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
+    const lookUpHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
     const storedToken = await this.RefreshTokenModel.findOneAndDelete({
-      token: refreshToken,
+      token: lookUpHash,
       expiryDate: { $gte: new Date() },
     });
     if (!storedToken) {
@@ -93,7 +95,9 @@ export class AuthService {
       this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
     const accessToken = this.jwtService.sign({ userId }, { expiresIn: accessTokenExpiration });
 
-    const refreshToken = uuidv4();
+    const refreshToken = crypto.randomBytes(32).toString('hex');
+
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
 
     const expiryDate = new Date();
     const expirationDays =
@@ -101,7 +105,7 @@ export class AuthService {
     expiryDate.setDate(expiryDate.getDate() + expirationDays / (24 * 60 * 60));
 
     await this.RefreshTokenModel.create({
-      refreshToken,
+      refreshToken: refreshTokenHash,
       userId: userId.toString(),
       expiryDate,
     });
