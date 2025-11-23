@@ -2,7 +2,12 @@ import { IsEmail, IsString, Matches, MinLength, MaxLength } from 'class-validato
 
 export class SignupDto {
   @IsString()
-  name: string;
+  @MinLength(2)
+  username: string;
+
+  @IsString()
+  @MinLength(2)
+  displayName: string;
 
   @IsEmail()
   email: string;

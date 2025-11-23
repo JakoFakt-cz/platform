@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   async signup(signupData: SignupDto) {
-    const { email, password, name } = signupData;
+    const { email, password, username, displayName } = signupData;
 
     // Check if email is already in use
     const emailInUse = await this.UserModel.findOne({
@@ -50,7 +50,8 @@ export class AuthService {
 
     // Create new user
     await this.UserModel.create({
-      name,
+      username,
+      displayName,
       email,
       password: hashedPassword,
     });
@@ -64,7 +65,7 @@ export class AuthService {
       email,
     });
 
-    const correctPassword = user?.password || this.dummyPassword;
+    const correctPassword = user?.passwordHash || this.dummyPassword;
 
     // Compare the provided password with the stored hashed password
     const passwordMatch = await bcrypt.compare(password, correctPassword);
