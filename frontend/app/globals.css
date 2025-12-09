@@ -5,3 +5,11 @@
   --color-accent: #ff5722;
   --color-secondary: #eeeeee;
 }
+
+@theme inline {
+  --font-work: var(--font-work-sans), 'Inter', sans-serif;
+}
+
+body {
+  @apply text-primary font-work bg-secondary;
+}
