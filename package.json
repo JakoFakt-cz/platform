@@ -28,5 +28,8 @@
   "workspaces": [
     "frontend",
     "backend"
-  ]
+  ],
+  "dependencies": {
+    "@nestjs/throttler": "^6.4.0"
+  }
 }
