@@ -9,7 +9,7 @@ const MenuItem = (props: { label: string; isMulti?: boolean }) => {
       {props.isMulti && (
         <Icon
           icon={'mdi:chevron-down'}
-          className={'text-2xl -translate-y-0.25'}
+          className={'text-2xl translate-y-0.25'}
         />
       )}
     </span>
