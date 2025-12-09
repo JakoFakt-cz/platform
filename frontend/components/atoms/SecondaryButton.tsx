@@ -10,7 +10,7 @@ const SecondaryButton = (props: {
     <button
       className={
         'py-1.25 px-3 flex items-center gap-1 ' +
-        'bg-secondary text-primary font-semibold rounded-xl border-1 border-primary/30 ' +
+        'bg-secondary text-primary font-semibold rounded-xl border-1 border-primary/30 cursor-pointer ' +
         'hover:bg-primary hover:text-secondary transition-all duration-200 ' +
         (props.className || '')
       }
