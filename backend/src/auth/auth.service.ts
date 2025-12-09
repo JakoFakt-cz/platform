@@ -9,6 +9,8 @@ import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schema/refreshToken.schema';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { OTP } from './schema/otp.schema';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,10 @@ export class AuthService {
     @InjectModel(RefreshToken.name)
     private RefreshTokenModel: Model<RefreshToken>,
 
+    @InjectModel(OTP.name)
+    private OTPModel: Model<OTP>,
+
+    private mailService: MailService,
     private configService: ConfigService,
     private jwtService: JwtService,
   ) {
@@ -39,7 +45,7 @@ export class AuthService {
 
     // Hash the password
     const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, Number(saltRounds));
 
     if (emailInUse) {
       throw new BadRequestException('Email already exists');
@@ -52,7 +58,7 @@ export class AuthService {
     await this.UserModel.create({
       username,
       displayName,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
     });
   }
@@ -62,7 +68,7 @@ export class AuthService {
 
     // Find the user by email
     const user: User | null = await this.UserModel.findOne({
-      email,
+      email: email.toLowerCase(),
     });
 
     const correctPassword = user?.passwordHash || this.dummyPassword;
@@ -129,5 +135,41 @@ export class AuthService {
       refreshToken,
       refreshTokenExpiry: expiryDate,
     };
+  }
+
+  async generateOTPCode(email: string): Promise<void> {
+    const code = crypto.randomInt(100000, 999999);
+
+    const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
+    const hashedCode = await bcrypt.hash(code.toString(), Number(saltRounds));
+
+    await this.OTPModel.deleteMany({
+      email,
+    });
+
+    await this.OTPModel.create({
+      email,
+      code: hashedCode,
+    });
+
+    await this.mailService.sendVerifyEmail(email, code.toString());
+  }
+
+  async verifyOTPCode(email: string, code: string): Promise<void> {
+    const emailOTP = await this.OTPModel.findOne({
+      email,
+    });
+
+    if (!emailOTP) {
+      throw new BadRequestException('Invalid or expired OTP code');
+    }
+    const isCodeValid = await bcrypt.compare(code.toString(), emailOTP.code);
+
+    if (isCodeValid) {
+      await this.OTPModel.deleteMany({ email });
+      await this.UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
+    } else {
+      throw new UnauthorizedException('Invalid or expired OTP code');
+    }
   }
 }

@@ -4,6 +4,8 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
+import { SendVerifyEmailDto } from './dto/sendVerifyEmail.dto';
+import { VerifyEmailDto } from './dto/verifyEmail.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -83,5 +85,15 @@ export class AuthController {
   async checkUsername(@Query('username') username: string) {
     const isAvailable = await this.authService.isUsernameAvailable(username);
     return { isAvailable };
+  }
+
+  @Post('send-verify-email') //auth/send-verify-email
+  async sendVerifyEmail(@Body() emailData: SendVerifyEmailDto) {
+    await this.authService.generateOTPCode(emailData.email.toLowerCase());
+  }
+
+  @Post('verify-email') //auth/send-verify-email
+  async verifyEmail(@Body() verifyData: VerifyEmailDto) {
+    await this.authService.verifyOTPCode(verifyData.email.toLowerCase(), verifyData.code);
   }
 }
