@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { OTP } from './schema/otp.schema';
 import { MailService } from '../mail/mail.service';
+import { OAuthUserDto } from './dto/oauthUser.dto';
 
 @Injectable()
 export class AuthService {
@@ -110,33 +111,6 @@ export class AuthService {
     return !exists;
   }
 
-  private async generateUserTokens(userId: Types.ObjectId) {
-    const accessTokenExpiration =
-      this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
-    const accessToken = this.jwtService.sign({ userId }, { expiresIn: accessTokenExpiration });
-
-    const refreshToken = crypto.randomBytes(32).toString('hex');
-
-    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-
-    const expiryDate = new Date();
-    const expirationDays =
-      this.configService.get<number>('auth.refreshTokenExpiration') || 14 * 24 * 60 * 60;
-    expiryDate.setDate(expiryDate.getDate() + expirationDays / (24 * 60 * 60));
-
-    await this.RefreshTokenModel.create({
-      refreshToken: refreshTokenHash,
-      userId: userId.toString(),
-      expiryDate,
-    });
-
-    return {
-      accessToken,
-      refreshToken,
-      refreshTokenExpiry: expiryDate,
-    };
-  }
-
   async generateOTPCode(email: string): Promise<void> {
     const code = crypto.randomInt(100000, 999999);
 
@@ -170,6 +144,84 @@ export class AuthService {
       await this.UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
+    }
+  }
+
+  async loginWithOAuth(oauthUser: OAuthUserDto) {
+    if (!oauthUser.email || !oauthUser.name) {
+      throw new BadRequestException('OAuth provider did not return an email');
+    }
+
+    let user = await this.UserModel.findOne({ email: oauthUser.email.toLowerCase() });
+
+    if (!user) {
+      const uniqueUsername = await this.generateUniqueUsername(oauthUser.name);
+      user = await this.UserModel.create({
+        username: uniqueUsername,
+        displayName: oauthUser.name,
+        email: oauthUser.email.toLowerCase(),
+        emailVerified: true,
+        profilePictureUrl: oauthUser.picture || '',
+        authProvider: [oauthUser.provider],
+      });
+    } else if (!user.authProvider.includes(oauthUser.provider)) {
+      throw new UnauthorizedException(
+        'Please link your OAuth provider in account settings before logging in with it.',
+      );
+    }
+
+    return this.generateUserTokens(user._id as Types.ObjectId);
+  }
+
+  private async generateUserTokens(userId: Types.ObjectId) {
+    const accessTokenExpiration =
+      this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
+    const accessToken = this.jwtService.sign({ userId }, { expiresIn: accessTokenExpiration });
+
+    const refreshToken = crypto.randomBytes(32).toString('hex');
+
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+    const expiryDate = new Date();
+    const expirationDays =
+      this.configService.get<number>('auth.refreshTokenExpiration') || 14 * 24 * 60 * 60;
+    expiryDate.setDate(expiryDate.getDate() + expirationDays / (24 * 60 * 60));
+
+    await this.RefreshTokenModel.create({
+      token: refreshTokenHash,
+      userId: userId.toString(),
+      expiryDate,
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      refreshTokenExpiry: expiryDate,
+    };
+  }
+
+  private async generateUniqueUsername(baseName: string): Promise<string> {
+    baseName = baseName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9_.]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 32);
+
+    const available = await this.isUsernameAvailable(baseName);
+
+    if (available) {
+      return baseName;
+    }
+
+    while (true) {
+      const randomSuffix = Math.floor(Math.random() * 9000) + 1000;
+      const newUsername = `${baseName}-${randomSuffix}`;
+
+      if (await this.isUsernameAvailable(newUsername)) {
+        return newUsername;
+      }
     }
   }
 }

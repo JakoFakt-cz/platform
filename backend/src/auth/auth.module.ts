@@ -6,6 +6,7 @@ import { User, UserSchema } from '../user/user.schema';
 import { RefreshToken, RefreshTokenSchema } from './schema/refreshToken.schema';
 import { MailModule } from '../mail/mail.module';
 import { OTP, OTPSchema } from './schema/otp.schema';
+import { GoogleStrategy } from './oauthStrategies/google.strategy';
 
 @Module({
   imports: [
@@ -18,6 +19,6 @@ import { OTP, OTPSchema } from './schema/otp.schema';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, GoogleStrategy],
 })
 export class AuthModule {}
