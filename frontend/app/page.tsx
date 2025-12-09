@@ -1,10 +1,9 @@
 import Image from 'next/image';
-import Search from "@/components/composites/Search";
+import Search from '@/components/composites/Search';
 import { Icon } from '@iconify/react';
 
 export default function Home() {
-
-    return (
+  return (
     <main className={'w-full'}>
       {/*   HERO SEKCE   */}
       <section
@@ -37,107 +36,177 @@ export default function Home() {
           tohle <span className={'underline'}>je</span>,<br />
           <span className={'text-accent'}>dokonalé hero</span>
         </h2>
-          <Search/>
+        <Search />
       </section>
-        <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-30">
-            <div className="w-full shadow-xl rounded-2xl p-5 mb-10">
-                <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-6 -m-5">
-                    Právě koluje
-                </div>
-                <div className="mt-10">
-                    <div className="flex-row flex items-center content-center gap-1.5 mb-3">
-                        <img src="favicon.ico" width="18" height="18" className="rounded-xl"/>
-                        <span className="text-sm font-semibold">Někdo Někdo</span>
-                        <span className="text-sm">1/1/2000</span>
-                    </div>
-                    <hr className="border-primary my-3"/>
-                    <h1 className="text-3xl font-semibold mb-1">
-                        Dechberoucí header
-                    </h1>
-                    <span>
-                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula egestas nulla, et sollicitudin sem purus in lacus. Sed convallis magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id, malesuada in, quam.
-                    </span>
-                </div>
-                <div className="mt-5 flex-row flex items-center gap-2">
-                    <div className="border-1 rounded-full flex px-2 py-1 items-center">
-                        <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                            <Icon icon="bx:up-arrow"/>
-                        </button>
-                        <span className="px-1">0</span>
-                        <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                            <Icon icon="bx:down-arrow"/>
-                        </button>
-                    </div>
-                    <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"><Icon icon="material-symbols:comment-outline"/>0</a>
-                    <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst dále</a>
-                    <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
-                        <Icon icon="ci:flag" className=""/>
-                        Nahlásit
-                    </a>
-                </div>
+      <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-30">
+        <div className="w-full shadow-xl rounded-2xl p-5 mb-10">
+          <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-6 -m-5">
+            Právě koluje
+          </div>
+          <div className="mt-10">
+            <div className="flex-row flex items-center content-center gap-1.5 mb-3">
+              <img
+                src="favicon.ico"
+                width="18"
+                height="18"
+                className="rounded-xl"
+              />
+              <span className="text-sm font-semibold">Někdo Někdo</span>
+              <span className="text-sm">1/1/2000</span>
             </div>
-        </section>
-        <section className="w-full flex flex-col items-center justify-center px-30">
-            <div className="w-full flex shadow-xl justify-around rounded-2xl border border-primary mb-10">
-                <a href="/" className="p-5 rounded-l-2xl flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
-                </a>
-                <a href="/" className="p-5 rounded-r-2xl flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
-                </a>
+            <hr className="border-primary my-3" />
+            <h1 className="text-3xl font-semibold mb-1">Dechberoucí header</h1>
+            <span>
+              Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis
+              risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis
+              ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat
+              volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula
+              egestas nulla, et sollicitudin sem purus in lacus. Sed convallis
+              magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit
+              aspernatur aut odit aut fugit, sed quia consequuntur magni dolores
+              eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at
+              felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id,
+              malesuada in, quam.
+            </span>
+          </div>
+          <div className="mt-5 flex-row flex items-center gap-2">
+            <div className="border-1 rounded-full flex px-2 py-1 items-center">
+              <button className="hover:scale-120 transition-all hover:cursor-pointer">
+                <Icon icon="bx:up-arrow" />
+              </button>
+              <span className="px-1">0</span>
+              <button className="hover:scale-120 transition-all hover:cursor-pointer">
+                <Icon icon="bx:down-arrow" />
+              </button>
             </div>
-        </section>
-        <section className="w-full flex flex-col items-center justify-center px-30">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
-                <div className="shadow-xl rounded-2xl border p-5">
-                    <div className="flex-row flex items-center content-center gap-1.5 mb-3">
-                        <img src="favicon.ico" width="18" height="18" className="rounded-xl"/>
-                        <span className="text-sm font-semibold">Někdo Někdo</span>
-                        <span className="text-sm">1/1/2000</span>
-                    </div>
-                    <hr className="border-primary my-3"/>
-                    <h1 className="text-2xl font-semibold mb-1">Tohle je header</h1>
-                    <span className="">
-                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula egestas nulla, et sollicitudin sem purus in lacus. Sed convallis magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id, malesuada in, quam.
-                    </span>
-                    <div className="mt-5 flex-row flex items-center gap-2">
-                        <div className="border-1 rounded-full flex px-2 py-1 items-center">
-                            <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                                <Icon icon="bx:up-arrow"/>
-                            </button>
-                            <span className="px-1">0</span>
-                            <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                                <Icon icon="bx:down-arrow"/>
-                            </button>
-                        </div>
-                        <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"><Icon icon="material-symbols:comment-outline"/>0</a>
-                        <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst dále</a>
-                        <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
-                            <Icon icon="ci:flag" className=""/>
-                            Nahlásit
-                        </a>
-                    </div>
-                </div>
+            <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
+              <Icon icon="material-symbols:comment-outline" />0
+            </a>
+            <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
+              Číst dále
+            </a>
+            <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
+              <Icon icon="ci:flag" className="" />
+              Nahlásit
+            </a>
+          </div>
+        </div>
+      </section>
+      <section className="w-full flex flex-col items-center justify-center px-30">
+        <div className="w-full flex shadow-xl justify-around rounded-2xl border border-primary mb-10">
+          <a
+            href="/"
+            className="p-5 rounded-l-2xl flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="20"
+            />
+            <h1>Kategorie</h1>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="20"
+            />
+            <h1>Kategorie</h1>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="20"
+            />
+            <h1>Kategorie</h1>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="20"
+            />
+            <h1>Kategorie</h1>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="20"
+            />
+            <h1>Kategorie</h1>
+          </a>
+          <a
+            href="/"
+            className="p-5 rounded-r-2xl flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="20"
+            />
+            <h1>Kategorie</h1>
+          </a>
+        </div>
+      </section>
+      <section className="w-full flex flex-col items-center justify-center px-30">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
+          <div className="shadow-xl rounded-2xl border p-5">
+            <div className="flex-row flex items-center content-center gap-1.5 mb-3">
+              <img
+                src="favicon.ico"
+                width="18"
+                height="18"
+                className="rounded-xl"
+              />
+              <span className="text-sm font-semibold">Někdo Někdo</span>
+              <span className="text-sm">1/1/2000</span>
             </div>
-        </section>
+            <hr className="border-primary my-3" />
+            <h1 className="text-2xl font-semibold mb-1">Tohle je header</h1>
+            <span className="">
+              Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis
+              risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis
+              ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat
+              volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula
+              egestas nulla, et sollicitudin sem purus in lacus. Sed convallis
+              magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit
+              aspernatur aut odit aut fugit, sed quia consequuntur magni dolores
+              eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at
+              felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id,
+              malesuada in, quam.
+            </span>
+            <div className="mt-5 flex-row flex items-center gap-2">
+              <div className="border-1 rounded-full flex px-2 py-1 items-center">
+                <button className="hover:scale-120 transition-all hover:cursor-pointer">
+                  <Icon icon="bx:up-arrow" />
+                </button>
+                <span className="px-1">0</span>
+                <button className="hover:scale-120 transition-all hover:cursor-pointer">
+                  <Icon icon="bx:down-arrow" />
+                </button>
+              </div>
+              <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
+                <Icon icon="material-symbols:comment-outline" />0
+              </a>
+              <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
+                Číst dále
+              </a>
+              <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
+                <Icon icon="ci:flag" className="" />
+                Nahlásit
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
