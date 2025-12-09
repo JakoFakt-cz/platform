@@ -6,11 +6,14 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshToken } from './refreshToken.schema';
-import { v4 as uuidv4 } from 'uuid';
+import { RefreshToken } from './schema/refreshToken.schema';
+import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
+  private readonly dummyPassword: string;
+
   constructor(
     @InjectModel(User.name)
     private UserModel: Model<User>,
@@ -18,26 +21,37 @@ export class AuthService {
     @InjectModel(RefreshToken.name)
     private RefreshTokenModel: Model<RefreshToken>,
 
+    private configService: ConfigService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    const saltRoundsFromConf = this.configService.get<number>('auth.hashSaltRounds');
+    const saltRounds = saltRoundsFromConf ? Number(saltRoundsFromConf) : 12;
+    this.dummyPassword = bcrypt.hashSync('Bezplatné Peníze', saltRounds);
+  }
 
   async signup(signupData: SignupDto) {
-    const { email, password, name } = signupData;
+    const { email, password, username, displayName } = signupData;
 
     // Check if email is already in use
     const emailInUse = await this.UserModel.findOne({
       email,
     });
-    if (emailInUse) {
-      throw new BadRequestException('Email already exists');
-    }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    if (emailInUse) {
+      throw new BadRequestException('Email already exists');
+      // TODO: Neodesílat informaci zda existuje email nebo ne
+      // Místo toho poslat vždy zprávů, že registrace proběhla úspěšně a čeká se na potvrzení emailu
+      // Pak se odešle buď potvrzovací mail, nebo upozornění, že se na mail někdo pokoušel registrovat.
+    }
 
     // Create new user
     await this.UserModel.create({
-      name,
+      username,
+      displayName,
       email,
       password: hashedPassword,
     });
@@ -50,13 +64,12 @@ export class AuthService {
     const user: User | null = await this.UserModel.findOne({
       email,
     });
-    if (!user) {
-      throw new UnauthorizedException('Wrong credentials');
-    }
+
+    const correctPassword = user?.passwordHash || this.dummyPassword;
 
     // Compare the provided password with the stored hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
+    const passwordMatch = await bcrypt.compare(password, correctPassword);
+    if (!user || !passwordMatch) {
       throw new UnauthorizedException('Wrong credentials');
     }
 
@@ -65,8 +78,10 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
+    const lookUpHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
     const storedToken = await this.RefreshTokenModel.findOneAndDelete({
-      token: refreshToken,
+      token: lookUpHash,
       expiryDate: { $gte: new Date() },
     });
     if (!storedToken) {
@@ -76,26 +91,43 @@ export class AuthService {
     return this.generateUserTokens(storedToken.userId);
   }
 
-  private async generateUserTokens(userId: Types.ObjectId) {
-    const accessToken = this.jwtService.sign({ userId }, { expiresIn: '1h' });
-    const refreshToken = uuidv4();
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    if (!username) {
+      return false;
+    }
 
-    await this.storeRefreshToken(refreshToken, userId);
+    if (username.length < 2 || username.length > 32) {
+      return false;
+    }
+
+    const exists = await this.UserModel.findOne({ username }).select('_id').lean().exec();
+    return !exists;
+  }
+
+  private async generateUserTokens(userId: Types.ObjectId) {
+    const accessTokenExpiration =
+      this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
+    const accessToken = this.jwtService.sign({ userId }, { expiresIn: accessTokenExpiration });
+
+    const refreshToken = crypto.randomBytes(32).toString('hex');
+
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+    const expiryDate = new Date();
+    const expirationDays =
+      this.configService.get<number>('auth.refreshTokenExpiration') || 14 * 24 * 60 * 60;
+    expiryDate.setDate(expiryDate.getDate() + expirationDays / (24 * 60 * 60));
+
+    await this.RefreshTokenModel.create({
+      refreshToken: refreshTokenHash,
+      userId: userId.toString(),
+      expiryDate,
+    });
 
     return {
       accessToken,
       refreshToken,
+      refreshTokenExpiry: expiryDate,
     };
-  }
-
-  private async storeRefreshToken(token: string, userId: Types.ObjectId) {
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 14);
-
-    await this.RefreshTokenModel.create({
-      token,
-      userId: userId.toString(),
-      expiryDate,
-    });
   }
 }

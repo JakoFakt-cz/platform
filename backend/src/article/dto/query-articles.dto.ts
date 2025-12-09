@@ -11,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class GetArticlesDto {
+export class QueryArticlesDto {
   @IsOptional()
   @IsNumber()
   @Min(1)
