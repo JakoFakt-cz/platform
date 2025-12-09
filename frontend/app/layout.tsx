@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Work_Sans } from 'next/font/google';
 import './globals.css';
 import Menu from '@/components/composites/navigation/Menu';
-import Footer from '@/components/composites/footer/Footer'
 
 const workSans = Work_Sans({
   variable: '--font-work-sans',
@@ -28,7 +27,6 @@ export default function RootLayout({
       <body className={`${workSans.variable} antialiased`}>
         <Menu />
         {children}
-        <Footer/>
       </body>
     </html>
   );

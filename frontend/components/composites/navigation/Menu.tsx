@@ -24,7 +24,7 @@ const Menu = () => {
               height={90}
             />
           </Link>
-          <div className={"flex flex-row items-center gap-4"}>
+          <div className={'flex flex-row items-center gap-4'}>
             <MenuItem label={'Nejnovější'} isMulti />
             <MenuItem label={'O projektu'} isMulti />
             <MenuItem label={'Záložka'} isMulti />
