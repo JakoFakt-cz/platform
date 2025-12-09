@@ -40,7 +40,7 @@ export default function Home() {
           <Search/>
       </section>
         <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-30">
-            <div className="w-full shadow-xl rounded-2xl p-5 mb-10">
+            <div className="w-full shadow-xl rounded-2xl p-5 mb-10 border">
                 <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-6 -m-5">
                     Právě koluje
                 </div>
