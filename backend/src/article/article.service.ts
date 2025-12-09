@@ -8,7 +8,20 @@ export class ArticleService {
   constructor(@InjectModel(Article.name) private model: Model<Article>) {}
 
   async createArticle(title: string, authorId: string, body: string): Promise<Article> {
-    const created = new this.model({ title, authorId, body });
+    const created = new this.model({
+      header: {
+        title: title,
+        headline: 'test',
+        authorId: authorId,
+      },
+      body: {
+        content: body,
+      },
+      meta: {
+        views: 0,
+        tags: ['none'],
+      },
+    });
     return created.save();
   }
 
@@ -16,7 +29,7 @@ export class ArticleService {
     const filter: Record<string, any> = {};
 
     if (authorId) {
-      filter.authorId = authorId;
+      filter['header.authorId'] = authorId;
     }
 
     const query = this.model.find(filter);
@@ -28,5 +41,23 @@ export class ArticleService {
     query.limit(limit ?? 500);
 
     return query.exec();
+  }
+
+  async getArticle(id: string): Promise<Article | null> {
+    const query = this.model.find({
+      _id: id,
+    });
+
+    if (query == null) {
+      return null;
+    }
+
+    const result = await query.exec();
+    const article = result[0];
+
+    article.meta.views = article.meta.views + 1;
+    await this.model.findByIdAndUpdate(article._id, { $set: article }, { new: true }).exec();
+
+    return article;
   }
 }
