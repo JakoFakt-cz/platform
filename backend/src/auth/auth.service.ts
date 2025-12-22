@@ -55,12 +55,12 @@ export class AuthService {
       // Pak se odešle buď potvrzovací mail, nebo upozornění, že se na mail někdo pokoušel registrovat.
     }
 
-    // Create new user
+    // Create a new user
     await this.UserModel.create({
       username,
       displayName,
       email: email.toLowerCase(),
-      password: hashedPassword,
+      passwordHash: hashedPassword,
     });
   }
 
@@ -144,6 +144,21 @@ export class AuthService {
       await this.UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
+    }
+  }
+
+  async toggleOAuthProvider(userId: Types.ObjectId, provider: string) {
+    const user = await this.UserModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.authProvider.includes(provider)) {
+      user.updateOne({ authProvider: user.authProvider.filter((p) => p !== provider) });
+      await user.save();
+    } else {
+      user.authProvider.push(provider);
+      await user.save();
     }
   }
 

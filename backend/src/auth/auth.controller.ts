@@ -19,6 +19,8 @@ import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import { AuthGuard as AuthPassportGuard } from '@nestjs/passport';
 import { OAuthUserDto } from './dto/oauthUser.dto';
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '../guard/auth.guard';
+import { Types } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
@@ -120,6 +122,16 @@ export class AuthController {
   }
 
   // OAUTH AUTHENTICATION
+
+  @Get('oauth/toggle-provider/:provider') //auth/oauth/toggle-provider/:provider
+  @UseGuards(AuthGuard)
+  async linkOAuthProvider(@Req() request: Request) {
+    const user = request.user as { userId: string };
+    const userId = new Types.ObjectId(user.userId);
+    const provider = request.params.provider;
+
+    await this.authService.toggleOAuthProvider(userId, provider);
+  }
 
   @Get('oauth/google') //auth/oauth/google
   @UseGuards(AuthPassportGuard('google'))
