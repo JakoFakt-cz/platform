@@ -13,7 +13,7 @@ const Search = () => {
                 onClick={() => setIsFocused(false)}
             />
 
-            <div className={`w-full px-50 mt-10 ${isFocused ? 'relative z-50' : 'z-50'}`}>
+            <div className={`w-full px-5 md:px-50 mt-10 ${isFocused ? 'relative z-50' : 'z-50'}`}>
                 <input
                     className={`flex h-15 p-5 rounded-2xl border border-primary shadow-xl w-full bg-secondary text-lg font-medium focus:outline-none transition-all duration-500 ease-out ${
                         isFocused ? 'scale-110 -translate-y-50' : 'scale-100'

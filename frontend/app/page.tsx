@@ -29,7 +29,7 @@ export default function Home() {
 
         <h2
           className={
-            'text-5xl md:text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
+            'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
           }
         >
           {/* TODO: Doladit design hlavního textu */}
@@ -39,7 +39,7 @@ export default function Home() {
         </h2>
           <Search/>
       </section>
-        <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-30">
+        <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-5 md:px-30">
             <div className="w-full shadow-xl rounded-2xl p-5 mb-10">
                 <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-6 -m-5">
                     Právě koluje
@@ -69,7 +69,7 @@ export default function Home() {
                         </button>
                     </div>
                     <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"><Icon icon="material-symbols:comment-outline"/>0</a>
-                    <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst dále</a>
+                    <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst</a>
                     <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
                         <Icon icon="ci:flag" className=""/>
                         Nahlásit
@@ -77,35 +77,35 @@ export default function Home() {
                 </div>
             </div>
         </section>
-        <section className="w-full flex flex-col items-center justify-center px-30">
-            <div className="w-full flex shadow-xl justify-around rounded-2xl border border-primary mb-10">
-                <a href="/" className="p-5 rounded-l-2xl flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
+        <section className="w-full flex flex-col items-center justify-center px-4 md:px-30">
+            <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 shadow-xl rounded-2xl border border-primary mb-10 overflow-hidden">
+                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
+                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
+                    <span className="font-semibold mt-2 text-center">Kategorie</span>
                 </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
+                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
+                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
+                    <span className="font-semibold mt-2 text-center">Kategorie</span>
                 </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
+                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
+                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
+                    <span className="font-semibold mt-2 text-center">Kategorie</span>
                 </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
+                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
+                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
+                    <span className="font-semibold mt-2 text-center">Kategorie</span>
                 </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
+                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
+                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
+                    <span className="font-semibold mt-2 text-center">Kategorie</span>
                 </a>
-                <a href="/" className="p-5 rounded-r-2xl flex flex-col items-center hover:cursor-pointer hover:bg-primary hover:text-white transition-all w-full">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="20" />
-                    <h1>Kategorie</h1>
+                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
+                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
+                    <span className="font-semibold mt-2 text-center">Kategorie</span>
                 </a>
             </div>
         </section>
-        <section className="w-full flex flex-col items-center justify-center px-30">
+        <section className="w-full flex flex-col items-center justify-center px-5 md:px-30">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
                 <div className="shadow-xl rounded-2xl border p-5">
                     <div className="flex-row flex items-center content-center gap-1.5 mb-3">
@@ -115,7 +115,7 @@ export default function Home() {
                     </div>
                     <hr className="border-primary my-3"/>
                     <h1 className="text-2xl font-semibold mb-1">Tohle je header</h1>
-                    <span className="">
+                    <span>
                         Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula egestas nulla, et sollicitudin sem purus in lacus. Sed convallis magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id, malesuada in, quam.
                     </span>
                     <div className="mt-5 flex-row flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function Home() {
                             </button>
                         </div>
                         <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"><Icon icon="material-symbols:comment-outline"/>0</a>
-                        <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst dále</a>
+                        <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst</a>
                         <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
                             <Icon icon="ci:flag" className=""/>
                             Nahlásit
