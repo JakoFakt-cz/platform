@@ -152,7 +152,38 @@ export class AuthController {
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true, // V produkci určitě true
+      secure: true,
+      sameSite: 'strict',
+      expires: refreshTokenExpiry,
+      path: '/auth/refresh',
+    });
+
+    const redirectUrl =
+      this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
+      'http://localhost:3000/oauth-success';
+    response.redirect(redirectUrl);
+  }
+
+  @Get('oauth/facebook') //auth/oauth/facebook
+  @UseGuards(AuthPassportGuard('facebook'))
+  async facebookOAuth() {}
+
+  @Get('oauth/facebook/callback') //auth/oauth/facebook/callback
+  @UseGuards(AuthPassportGuard('facebook'))
+  async facebookOAuthCallback(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const user = request.user as OAuthUserDto;
+    if (!user) {
+      throw new BadRequestException('No user information from Facebook OAuth');
+    }
+
+    const { refreshToken, refreshTokenExpiry } = await this.authService.loginWithOAuth(user);
+
+    response.cookie('jako_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
       sameSite: 'strict',
       expires: refreshTokenExpiry,
       path: '/auth/refresh',

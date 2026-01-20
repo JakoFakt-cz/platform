@@ -20,7 +20,6 @@ export class AuthGuard implements CanActivate {
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
-
     return true;
   }
 

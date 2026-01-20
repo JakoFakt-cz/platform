@@ -48,12 +48,7 @@ export class AuthService {
     const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
     const hashedPassword = await bcrypt.hash(password, Number(saltRounds));
 
-    if (emailInUse) {
-      throw new BadRequestException('Email already exists');
-      // TODO: Neodesílat informaci zda existuje email nebo ne
-      // Místo toho poslat vždy zprávů, že registrace proběhla úspěšně a čeká se na potvrzení emailu
-      // Pak se odešle buď potvrzovací mail, nebo upozornění, že se na mail někdo pokoušel registrovat.
-    }
+    if (emailInUse) return;
 
     // Create a new user
     await this.UserModel.create({

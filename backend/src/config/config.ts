@@ -10,6 +10,11 @@ export default () => ({
       clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
       callbackUrl: process.env.GOOGLE_OAUTH_CALLBACK_URL,
     },
+    facebook: {
+      clientId: process.env.FACEBOOK_OAUTH_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
+      callbackUrl: process.env.FACEBOOK_OAUTH_CALLBACK_URL,
+    },
   },
   database: {
     connectionString: process.env.MONGO_CONNECTION_STRING,
