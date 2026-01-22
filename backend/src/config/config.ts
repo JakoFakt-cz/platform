@@ -14,6 +14,7 @@ export default () => ({
       clientId: process.env.FACEBOOK_OAUTH_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
       callbackUrl: process.env.FACEBOOK_OAUTH_CALLBACK_URL,
+      // TODO: Get Facebook oauth keys from their portal
     },
   },
   database: {
