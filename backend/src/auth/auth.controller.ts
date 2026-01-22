@@ -164,6 +164,8 @@ export class AuthController {
     response.redirect(redirectUrl);
   }
 
+  /* FACEBOOK TEMPOARILY DISABLED
+
   @Get('oauth/facebook') //auth/oauth/facebook
   @UseGuards(AuthPassportGuard('facebook'))
   async facebookOAuth() {}
@@ -194,4 +196,5 @@ export class AuthController {
       'http://localhost:3000/oauth-success';
     response.redirect(redirectUrl);
   }
+  */
 }

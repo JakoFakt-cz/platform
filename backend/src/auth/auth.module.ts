@@ -6,8 +6,8 @@ import { User, UserSchema } from '../user/user.schema';
 import { RefreshToken, RefreshTokenSchema } from './schema/refreshToken.schema';
 import { MailModule } from '../mail/mail.module';
 import { OTP, OTPSchema } from './schema/otp.schema';
-import { GoogleStrategy } from './oauthStrategies/google.strategy';
-import { FacebookStrategy } from './oauthStrategies/facebook.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
