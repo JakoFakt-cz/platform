@@ -123,12 +123,11 @@ export class AuthController {
 
   // OAUTH AUTHENTICATION
 
-  @Get('oauth/toggle-provider/:provider') //auth/oauth/toggle-provider/:provider
+  @Post('oauth/toggle-provider') //auth/oauth/toggle-provider
   @UseGuards(AuthGuard)
-  async linkOAuthProvider(@Req() request: Request) {
+  async linkOAuthProvider(@Req() request: Request, @Body('provider') provider: string) {
     const user = request.user as { userId: string };
     const userId = new Types.ObjectId(user.userId);
-    const provider = request.params.provider;
 
     await this.authService.toggleOAuthProvider(userId, provider);
   }
