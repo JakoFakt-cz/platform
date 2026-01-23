@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/user.schema';
@@ -12,6 +17,7 @@ import * as crypto from 'crypto';
 import { OTP } from './schema/otp.schema';
 import { MailService } from '../mail/mail.service';
 import { OAuthUserDto } from './dto/oauthUser.dto';
+import * as uuid from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -225,13 +231,15 @@ export class AuthService {
       return baseName;
     }
 
-    while (true) {
-      const randomSuffix = Math.floor(Math.random() * 9000) + 1000;
+    for (let i = 0; i < 5; i++) {
+      const randomSuffix = uuid.v4().split('-')[0];
       const newUsername = `${baseName}-${randomSuffix}`;
 
       if (await this.isUsernameAvailable(newUsername)) {
         return newUsername;
       }
     }
+
+    throw new ServiceUnavailableException('Could not generate a unique username');
   }
 }
