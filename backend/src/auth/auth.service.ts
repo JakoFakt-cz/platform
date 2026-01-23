@@ -164,8 +164,11 @@ export class AuthService {
   }
 
   async loginWithOAuth(oauthUser: OAuthUserDto) {
-    if (!oauthUser.email || !oauthUser.name) {
+    if (!oauthUser.email) {
       throw new BadRequestException('OAuth provider did not return an email');
+    }
+    if (!oauthUser.name) {
+      throw new BadRequestException('OAuth provider did not return a name');
     }
 
     let user = await this.UserModel.findOne({ email: oauthUser.email.toLowerCase() });
