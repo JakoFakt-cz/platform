@@ -111,11 +111,13 @@ export class AuthController {
 
   // EMAIL VERIFICATION
 
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('send-verify-email') //auth/send-verify-email
   async sendVerifyEmail(@Body() emailData: SendVerifyEmailDto) {
     await this.authService.generateOTPCode(emailData.email.toLowerCase());
   }
 
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Post('verify-email') //auth/send-verify-email
   async verifyEmail(@Body() verifyData: VerifyEmailDto) {
     await this.authService.verifyOTPCode(verifyData.email.toLowerCase(), verifyData.code);
