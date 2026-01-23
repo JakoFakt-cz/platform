@@ -165,7 +165,7 @@ export class AuthController {
     response.redirect(redirectUrl);
   }
 
-  /* FACEBOOK TEMPOARILY DISABLED
+  /* FACEBOOK TEMPORARILY DISABLED
 
   @Get('oauth/facebook') //auth/oauth/facebook
   @UseGuards(AuthPassportGuard('facebook'))
