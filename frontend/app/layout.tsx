@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${workSans.variable} antialiased`}>
+      <body className={`${workSans.variable} antialiased scroll-smooth`}>
         <Menu />
         {children}
         <Footer/>
