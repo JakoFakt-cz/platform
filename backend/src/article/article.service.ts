@@ -25,23 +25,75 @@ export class ArticleService {
     return created.save();
   }
 
-  // TODO: add a way to query by an array of words
-  async getArticles(limit?: number, latest?: boolean, authorId?: string): Promise<Article[]> {
-    const filter: Record<string, any> = {};
+  async getArticles({
+    search,
+    limit = 50,
+    latest,
+    authorId,
+  }: {
+    search?: string;
+    limit?: number;
+    latest?: boolean;
+    authorId?: string;
+  }): Promise<Article[]> {
+    const pipeline: any[] = [];
+    if (search) {
+      pipeline.push({
+        $search: {
+          index: 'default',
+          compound: {
+            should: [
+              {
+                text: {
+                  query: search,
+                  path: 'header.title',
+                  score: { boost: { value: 5 } },
+                },
+              },
+              {
+                text: {
+                  query: search,
+                  path: 'header.headline',
+                  score: { boost: { value: 3 } },
+                },
+              },
+              {
+                text: {
+                  query: search,
+                  path: 'body.content',
+                },
+              },
+            ],
+          },
+        },
+      });
+    }
 
     if (authorId) {
-      filter['header.authorId'] = authorId;
+      pipeline.push({
+        $match: { "header.authorId": authorId },
+      });
     }
 
-    const query = this.model.find(filter);
-
-    if (latest) {
-      query.sort({ createdAt: -1 });
+    if (!search && latest) {
+      pipeline.push({
+        $sort: { createdAt: -1 },
+      });
     }
 
-    query.limit(limit ?? 500);
+    pipeline.push({ $limit: Number(limit) || 50 });
 
-    return query.exec();
+    pipeline.push({
+      $project: {
+        header: 1,
+        body: 1,
+        meta: 1,
+        createdAt: 1,
+        score: search ? { $meta: 'searchScore' } : undefined,
+      },
+    });
+
+    return this.model.aggregate(pipeline).exec();
   }
 
   async getArticle(id: string): Promise<Article | null> {

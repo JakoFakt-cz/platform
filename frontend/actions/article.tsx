@@ -2,6 +2,7 @@
 
 export interface ArticleModel {
   _id: string,
+  createdAt: string,
   header: {
     title: string,
     headline: string,
@@ -22,7 +23,7 @@ export default async function RetrieveArticleFromBackend({
   query: string,
 }): Promise<ArticleModel[]> {
   const res = await fetch(
-    `${process.env.BACKEND_URL}/articles?limit=${5}`,
+    `${process.env.BACKEND_URL}/articles?query=${query}`,
     {
       method: "GET",
     }

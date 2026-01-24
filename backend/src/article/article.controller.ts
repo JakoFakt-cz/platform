@@ -13,10 +13,11 @@ export class ArticleController {
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
   async getArticles(
     @Query('limit') limit?: number,
-    @Query('searchLatest') latest?: boolean,
+    @Query('latest') latest?: boolean,
+    @Query('query') query?: string,
     @Query('authorId') authorId?: string,
   ): Promise<Article[]> {
-    return this.service.getArticles(limit, latest, authorId);
+    return this.service.getArticles({ search: query, limit, latest, authorId });
   }
 
   @Post('create')
