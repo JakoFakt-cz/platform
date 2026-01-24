@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import MenuItem from '@/components/composites/navigation/MenuItem';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ import { Icon } from '@iconify/react';
 
 const Menu = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const testItems = [
     { label: 'Něco1', href: '/1' },
@@ -42,7 +43,12 @@ const Menu = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
+              <Icon icon="material-symbols:search" width="24" height="24" onClickCapture={() => {
+                searchInputRef?.current?.focus();
+              }}/>
+              <input type='text' className='w-32 border border-bg-primary/10 rounded-lg p-1' ref={searchInputRef} />
+
               <SecondaryButton
                   label={'Přihlásit se'}
                   icon={'material-symbols:person-outline'}

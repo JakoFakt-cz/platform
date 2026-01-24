@@ -1,7 +1,12 @@
+"use client";
+
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
 export default function PostDetail() {
+  const params = useSearchParams();
+
     return (
         <main className="w-full bg-secondary/20 min-h-screen">
             <section className={'w-full h-170 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'}>

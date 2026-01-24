@@ -25,6 +25,7 @@ export class ArticleService {
     return created.save();
   }
 
+  // TODO: add a way to query by an array of words
   async getArticles(limit?: number, latest?: boolean, authorId?: string): Promise<Article[]> {
     const filter: Record<string, any> = {};
 

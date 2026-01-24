@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { Article } from './schema/article.schema';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { QueryArticlesDto } from './dto/query-articles.dto';
 import { Throttle } from '@nestjs/throttler';
 import { GetArticleDto } from './dto/get-article.dto';
 
@@ -12,9 +11,12 @@ export class ArticleController {
 
   @Get()
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
-  async getArticles(@Body() dto: QueryArticlesDto): Promise<Article[]> {
-    if (dto == null) return this.service.getArticles(5, false, '');
-    return this.service.getArticles(dto.limit, dto.latest, dto.authorId);
+  async getArticles(
+    @Query('limit') limit?: number,
+    @Query('searchLatest') latest?: boolean,
+    @Query('authorId') authorId?: string,
+  ): Promise<Article[]> {
+    return this.service.getArticles(limit, latest, authorId);
   }
 
   @Post('create')
