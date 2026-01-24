@@ -30,6 +30,7 @@
     "backend"
   ],
   "dependencies": {
-    "@nestjs/throttler": "^6.4.0"
+    "@nestjs/throttler": "^6.4.0",
+    "uuid": "^13.0.0"
   }
 }

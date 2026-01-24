@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SignupDto } from './dto/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/user.schema';
@@ -9,6 +14,10 @@ import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schema/refreshToken.schema';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { OTP } from './schema/otp.schema';
+import { MailService } from '../mail/mail.service';
+import { OAuthUserDto } from './dto/oauthUser.dto';
+import * as uuid from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +30,10 @@ export class AuthService {
     @InjectModel(RefreshToken.name)
     private RefreshTokenModel: Model<RefreshToken>,
 
+    @InjectModel(OTP.name)
+    private OTPModel: Model<OTP>,
+
+    private mailService: MailService,
     private configService: ConfigService,
     private jwtService: JwtService,
   ) {
@@ -39,21 +52,16 @@ export class AuthService {
 
     // Hash the password
     const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, Number(saltRounds));
 
-    if (emailInUse) {
-      throw new BadRequestException('Email already exists');
-      // TODO: Neodesílat informaci zda existuje email nebo ne
-      // Místo toho poslat vždy zprávů, že registrace proběhla úspěšně a čeká se na potvrzení emailu
-      // Pak se odešle buď potvrzovací mail, nebo upozornění, že se na mail někdo pokoušel registrovat.
-    }
+    if (emailInUse) return;
 
-    // Create new user
+    // Create a new user
     await this.UserModel.create({
       username,
       displayName,
-      email,
-      password: hashedPassword,
+      email: email.toLowerCase(),
+      passwordHash: hashedPassword,
     });
   }
 
@@ -62,7 +70,7 @@ export class AuthService {
 
     // Find the user by email
     const user: User | null = await this.UserModel.findOne({
-      email,
+      email: email.toLowerCase(),
     });
 
     const correctPassword = user?.passwordHash || this.dummyPassword;
@@ -104,6 +112,86 @@ export class AuthService {
     return !exists;
   }
 
+  async generateOTPCode(email: string): Promise<void> {
+    const code = crypto.randomInt(100000, 999999);
+
+    const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
+    const hashedCode = await bcrypt.hash(code.toString(), Number(saltRounds));
+
+    await this.OTPModel.deleteMany({
+      email,
+    });
+
+    await this.OTPModel.create({
+      email,
+      code: hashedCode,
+    });
+
+    await this.mailService.sendVerifyEmail(email, code.toString());
+  }
+
+  async verifyOTPCode(email: string, code: string): Promise<void> {
+    const emailOTP = await this.OTPModel.findOne({
+      email,
+    });
+
+    if (!emailOTP) {
+      throw new BadRequestException('Invalid or expired OTP code');
+    }
+    const isCodeValid = await bcrypt.compare(code.toString(), emailOTP.code);
+
+    if (isCodeValid) {
+      await this.OTPModel.deleteMany({ email });
+      await this.UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
+    } else {
+      throw new UnauthorizedException('Invalid or expired OTP code');
+    }
+  }
+
+  async toggleOAuthProvider(userId: Types.ObjectId, provider: string) {
+    const user = await this.UserModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.authProvider.includes(provider)) {
+      user.updateOne({ authProvider: user.authProvider.filter((p) => p !== provider) });
+      await user.save();
+    } else {
+      user.authProvider.push(provider);
+      await user.save();
+    }
+  }
+
+  async loginWithOAuth(oauthUser: OAuthUserDto) {
+    if (!oauthUser.email) {
+      throw new BadRequestException('OAuth provider did not return an email');
+    }
+    if (!oauthUser.name) {
+      throw new BadRequestException('OAuth provider did not return a name');
+    }
+
+    let user = await this.UserModel.findOne({ email: oauthUser.email.toLowerCase() });
+
+    if (!user) {
+      const uniqueUsername = await this.generateUniqueUsername(oauthUser.name);
+      user = await this.UserModel.create({
+        username: uniqueUsername,
+        displayName: oauthUser.name,
+        email: oauthUser.email.toLowerCase(),
+        emailVerified: true,
+        profilePictureUrl: oauthUser.picture || '',
+        authProvider: [oauthUser.provider],
+      });
+    } else if (!user.authProvider.includes(oauthUser.provider)) {
+      throw new UnauthorizedException(
+        'Please link your OAuth provider in account settings before logging in with it.',
+      );
+    }
+
+    return this.generateUserTokens(user._id as Types.ObjectId);
+  }
+
   private async generateUserTokens(userId: Types.ObjectId) {
     const accessTokenExpiration =
       this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
@@ -119,7 +207,7 @@ export class AuthService {
     expiryDate.setDate(expiryDate.getDate() + expirationDays / (24 * 60 * 60));
 
     await this.RefreshTokenModel.create({
-      refreshToken: refreshTokenHash,
+      token: refreshTokenHash,
       userId: userId.toString(),
       expiryDate,
     });
@@ -129,5 +217,32 @@ export class AuthService {
       refreshToken,
       refreshTokenExpiry: expiryDate,
     };
+  }
+
+  private async generateUniqueUsername(baseName: string): Promise<string> {
+    baseName = baseName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9_.]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 32);
+
+    const available = await this.isUsernameAvailable(baseName);
+
+    if (available) {
+      return baseName;
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const randomSuffix = uuid.v4().split('-')[0];
+      const newUsername = `${baseName}-${randomSuffix}`;
+
+      if (await this.isUsernameAvailable(newUsername)) {
+        return newUsername;
+      }
+    }
+
+    throw new ServiceUnavailableException('Could not generate a unique username');
   }
 }
