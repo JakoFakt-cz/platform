@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
-    "next": "15.5.5",
+    "next": "15.5.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-toastify": "^11.0.5"

@@ -15,6 +15,9 @@ export class User extends Document {
   @Prop({ required: true, default: false })
   emailVerified: boolean;
 
+  @Prop({ required: true, default: ['local'] })
+  authProvider: string[];
+
   @Prop({ required: false })
   passwordHash: string;
 

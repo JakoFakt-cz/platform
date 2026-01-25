@@ -1,13 +1,42 @@
-import { Body, Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
+import { SendVerifyEmailDto } from './dto/sendVerifyEmail.dto';
+import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import { AuthGuard as AuthPassportGuard } from '@nestjs/passport';
+import { OAuthUserDto } from './dto/oauthUser.dto';
+import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '../guard/auth.guard';
+import { Types } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private configService: ConfigService,
+  ) {}
+
+  // EMAIL + PASSWORD AUTHENTICATION
+
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Get('check-username') //auth/check-username
+  async checkUsername(@Query('username') username: string) {
+    const isAvailable = await this.authService.isUsernameAvailable(username);
+    return { isAvailable };
+  }
 
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('signup') //auth/signup
@@ -51,6 +80,8 @@ export class AuthController {
     };
   }
 
+  // TOKEN REFRESHING
+
   @Throttle({ default: { limit: 10, ttl: 3600000 } })
   @Post('refresh') //auth/refresh
   async refreshTokens(
@@ -78,10 +109,93 @@ export class AuthController {
     };
   }
 
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
-  @Get('check-username') //auth/check-username
-  async checkUsername(@Query('username') username: string) {
-    const isAvailable = await this.authService.isUsernameAvailable(username);
-    return { isAvailable };
+  // EMAIL VERIFICATION
+
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
+  @Post('send-verify-email') //auth/send-verify-email
+  async sendVerifyEmail(@Body() emailData: SendVerifyEmailDto) {
+    await this.authService.generateOTPCode(emailData.email.toLowerCase());
   }
+
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
+  @Post('verify-email') //auth/verify-email
+  async verifyEmail(@Body() verifyData: VerifyEmailDto) {
+    await this.authService.verifyOTPCode(verifyData.email.toLowerCase(), verifyData.code);
+  }
+
+  // OAUTH AUTHENTICATION
+
+  @Post('oauth/toggle-provider') //auth/oauth/toggle-provider
+  @UseGuards(AuthGuard)
+  async linkOAuthProvider(@Req() request: Request, @Body('provider') provider: string) {
+    const user = request.user as { userId: string };
+    const userId = new Types.ObjectId(user.userId);
+
+    await this.authService.toggleOAuthProvider(userId, provider);
+  }
+
+  @Get('oauth/google') //auth/oauth/google
+  @UseGuards(AuthPassportGuard('google'))
+  async googleOAuth() {}
+
+  @Get('oauth/google/callback') //auth/oauth/google/callback
+  @UseGuards(AuthPassportGuard('google'))
+  async googleOAuthCallback(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const user = request.user as OAuthUserDto;
+    if (!user) {
+      throw new BadRequestException('No user information from Google OAuth');
+    }
+
+    const { refreshToken, refreshTokenExpiry } = await this.authService.loginWithOAuth(user);
+
+    response.cookie('jako_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: refreshTokenExpiry,
+      path: '/auth/refresh',
+    });
+
+    const redirectUrl =
+      this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
+      'http://localhost:3000/oauth-success';
+    response.redirect(redirectUrl);
+  }
+
+  /* FACEBOOK TEMPORARILY DISABLED
+
+  @Get('oauth/facebook') //auth/oauth/facebook
+  @UseGuards(AuthPassportGuard('facebook'))
+  async facebookOAuth() {}
+
+  @Get('oauth/facebook/callback') //auth/oauth/facebook/callback
+  @UseGuards(AuthPassportGuard('facebook'))
+  async facebookOAuthCallback(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const user = request.user as OAuthUserDto;
+    if (!user) {
+      throw new BadRequestException('No user information from Facebook OAuth');
+    }
+
+    const { refreshToken, refreshTokenExpiry } = await this.authService.loginWithOAuth(user);
+
+    response.cookie('jako_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires: refreshTokenExpiry,
+      path: '/auth/refresh',
+    });
+
+    const redirectUrl =
+      this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
+      'http://localhost:3000/oauth-success';
+    response.redirect(redirectUrl);
+  }
+  */
 }
