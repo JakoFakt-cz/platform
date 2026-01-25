@@ -1,12 +1,14 @@
 "use server";
 
+import { UserModel } from "./user";
+
 export interface ArticleModel {
   _id: string,
   createdAt: string,
   header: {
     title: string,
     headline: string,
-    authorId: string,
+    author: UserModel,
   },
   body: {
     content: string,
@@ -17,7 +19,7 @@ export interface ArticleModel {
   },
 }
 
-export default async function RetrieveArticleFromBackend({ 
+export async function RetrieveArticlesFromBackend({ 
   query,
 }: {
   query: string,
@@ -30,7 +32,26 @@ export default async function RetrieveArticleFromBackend({
   );
 
   if (!res.ok) {
-    throw new Error(`Failed to find articles. ${res.statusText}`);
+    throw new Error(`Failed to find articles with query ${query}. ${res.statusText}`);
+  }
+
+  return res.json();
+}
+
+export async function RetrieveExactArticleFromBackend({
+  id,
+}: {
+  id: string
+}): Promise<ArticleModel> {
+  const res = await fetch(
+    `${process.env.BACKEND_URL}/articles/exact?id=${id}`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to find article with id ${id}. ${res.statusText}`);
   }
 
   return res.json();

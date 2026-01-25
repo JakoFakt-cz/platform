@@ -9,6 +9,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AuthModule } from './auth/auth.module';
 import { ArticleModule } from './article/article.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -45,6 +46,8 @@ import { ArticleModule } from './article/article.module';
     AuthModule,
 
     ArticleModule,
+
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

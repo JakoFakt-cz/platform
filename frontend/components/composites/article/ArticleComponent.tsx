@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import Image from "next/image";
 import { ReactNode } from "react";
 
 type borderType = "shadow" | "border" | "none";
@@ -8,6 +9,7 @@ interface Props {
   header?: ReactNode;
   article: {
     author: string;
+    authorImage: string;
     tagline: string;
     date: string;
     description: string;
@@ -30,7 +32,7 @@ export default function ArticleComponent({
         </div>
       )}
       <div className="flex-row flex items-center content-center gap-1.5 mb-3">
-        <img src="favicon.ico" width="18" height="18" className="rounded-xl"/>
+        <Image src={article.authorImage} alt="logo" className="rounded-xl" width="18" height="18" />
         <span className="text-sm font-semibold">{article.author}</span>
         <span className="text-sm">{article.date}</span>
       </div>

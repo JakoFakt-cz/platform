@@ -4,19 +4,15 @@ import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { redirect, useSearchParams } from 'next/navigation';
 import ArticleComponent from '@/components/composites/article/ArticleComponent';
-import RetrieveArticleFromBackend, { ArticleModel } from '@/actions/article';
+import { ArticleModel, RetrieveArticlesFromBackend } from '@/actions/article';
 import { useEffect, useState } from 'react';
 import LoaderComponent from '@/components/loader';
-
-function FormatTimeArticle(date: Date) {
-  return `${date.getDay()}/${date.getMonth()}/${date.getFullYear()}`
-}
+import { FormatTimeArticle } from '@/formatters/timeformatter';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
 
   const queryParam = searchParams.get('query');
-  const queryTypeParam = searchParams.get('queryType');
 
   if (!queryParam) {
     redirect('/');
@@ -27,7 +23,7 @@ export default function SearchPage() {
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
 
   useEffect(() => {
-    RetrieveArticleFromBackend({ query: queryParam }).then((value) => {
+    RetrieveArticlesFromBackend({ query: queryParam }).then((value) => {
       setArticles(value);
       setTopArticle(value[0]);
       setLoading(false);
@@ -108,6 +104,8 @@ export default function SearchPage() {
     );
   }
 
+  console.log(topArticle);
+
   return (
     <main className={'w-full'}>
       {/*   HERO SEKCE   */}
@@ -148,7 +146,8 @@ export default function SearchPage() {
             borderType='shadow'
             article={{
               description: topArticle.header.headline,
-              author: topArticle.header.authorId,
+              author: topArticle.header.author.displayName,
+              authorImage: topArticle.header.author.profilePictureUrl,
               tagline: topArticle.header.title,
               numberOfComments: 0, //TODO: add number of comments
               votes: 0, //TODO: add number of views

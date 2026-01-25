@@ -1,4 +1,5 @@
 "use client"
+import { ValidateSearchInput } from "@/validators/searchvalidator";
 import { redirect } from "next/navigation";
 import {useState} from "react";
 
@@ -27,25 +28,13 @@ const Search = () => {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyUp={(e) => {
                       if (e.key != "Enter") return;
-                      if (!ValidateInput(inputValue)) return;
-                      redirect(`/search?query=${inputValue}&queryType=article`)
+                      if (!ValidateSearchInput(inputValue)) return;
+                      redirect(`/search?query=${inputValue}`)
                     }}
                 />
             </div>
         </>
     );
 };
-
-const ValidateInput = (input: string): boolean => {
-  if (input.length == 0 || input.replaceAll(' ', '').length == 0) {
-    return false; // It's going to be either whitespace or empty string
-  }
-
-  if (input.length > 200) {
-    return false; // too long
-  }
-
-  return true;
-}
 
 export default Search;

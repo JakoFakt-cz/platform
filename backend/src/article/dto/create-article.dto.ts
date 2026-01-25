@@ -8,7 +8,6 @@ export class CreateArticleDto {
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d+$/)
   readonly authorId: string;
 
   @IsString()

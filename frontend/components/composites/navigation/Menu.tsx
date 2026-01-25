@@ -6,9 +6,12 @@ import MenuItem from '@/components/composites/navigation/MenuItem';
 import Link from 'next/link';
 import SecondaryButton from '@/components/atoms/SecondaryButton';
 import { Icon } from '@iconify/react';
+import { ValidateSearchInput } from '@/validators/searchvalidator';
+import { redirect } from 'next/navigation';
 
 const Menu = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState<string>("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const testItems = [
@@ -47,7 +50,18 @@ const Menu = () => {
               <Icon icon="material-symbols:search" width="24" height="24" onClickCapture={() => {
                 searchInputRef?.current?.focus();
               }}/>
-              <input type='text' className='w-32 border border-bg-primary/10 rounded-lg p-1' ref={searchInputRef} />
+              <input 
+                type='text' 
+                className='w-32 border border-bg-primary/10 rounded-lg p-1' 
+                ref={searchInputRef} 
+                onChange={(e) => setSearchValue(e.target.value)}
+                value={searchValue}
+                onKeyUp={(e) => {
+                  if (e.key != "Enter") return;
+                  if (!ValidateSearchInput(searchValue)) return;
+                  redirect(`/search?query=${searchValue}`)
+                }}
+              />
 
               <SecondaryButton
                   label={'Přihlásit se'}

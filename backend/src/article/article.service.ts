@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Article } from './schema/article.schema';
 import { Model } from 'mongoose';
+import { Article } from './schema/article.schema';
 
 @Injectable()
 export class ArticleService {
@@ -12,7 +12,7 @@ export class ArticleService {
       header: {
         title: title,
         headline: 'test',
-        authorId: authorId,
+        author: authorId,
       },
       body: {
         content: body,
@@ -71,7 +71,7 @@ export class ArticleService {
 
     if (authorId) {
       pipeline.push({
-        $match: { "header.authorId": authorId },
+        $match: { 'header.author': authorId },
       });
     }
 
@@ -93,20 +93,30 @@ export class ArticleService {
       },
     });
 
-    return this.model.aggregate(pipeline).exec();
+    const res = await this.model.aggregate<Article>(pipeline).exec();
+    const populatedArticles = await this.model.populate(res as unknown as Document[], {
+      path: 'header.author',
+      select: 'displayName userName profilePictureUrl email',
+    });
+
+    return populatedArticles;
   }
 
   async getArticle(id: string): Promise<Article | null> {
-    const query = this.model.find({
-      _id: id,
-    });
+    const article = await this.model
+      .findOne({
+        _id: id,
+      })
+      .populate({
+        path: 'header.author',
+        select: 'displayName userName profilePictureUrl',
+      })
+      .lean()
+      .exec();
 
-    if (query == null) {
+    if (article == null) {
       return null;
     }
-
-    const result = await query.exec();
-    const article = result[0];
 
     article.meta.views = article.meta.views + 1;
     await this.model.findByIdAndUpdate(article._id, { $set: article }, { new: true }).exec();
