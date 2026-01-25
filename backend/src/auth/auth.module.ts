@@ -2,12 +2,11 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../user/user.schema';
+import { User, UserSchema } from '../user/schema/user.schema';
 import { RefreshToken, RefreshTokenSchema } from './schema/refreshToken.schema';
 import { MailModule } from '../mail/mail.module';
 import { OTP, OTPSchema } from './schema/otp.schema';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
@@ -20,6 +19,6 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, FacebookStrategy],
+  providers: [AuthService, GoogleStrategy],
 })
 export class AuthModule {}

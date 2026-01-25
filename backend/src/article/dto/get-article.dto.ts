@@ -1,8 +1,8 @@
-import { IsOptional, IsString, Matches } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 
 export class GetArticleDto {
-  @IsOptional()
   @IsString()
-  @Matches(/^.{24}$/)
+  @IsNotEmpty()
+  @IsMongoId()
   readonly id: string;
 }

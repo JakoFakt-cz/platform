@@ -1,33 +1,37 @@
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
   Max,
   MaxLength,
   Min,
-  MinLength,
 } from 'class-validator';
 
-export class QueryArticlesDto {
+export class GetArticlesDto {
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   @Min(1)
-  @Max(500)
+  @Max(100)
   readonly limit?: number;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
-  @MaxLength(40)
-  @Matches(/^\d+$/)
+  @IsMongoId()
   readonly authorId?: string;
 
-  @IsOptional()
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
+  @Type(() => Boolean)
   readonly latest?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  readonly query?: string;
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Article } from './schema/article.schema';
 import { Model } from 'mongoose';
+import { Article } from './schema/article.schema';
 
 @Injectable()
 export class ArticleService {
@@ -12,7 +12,7 @@ export class ArticleService {
       header: {
         title: title,
         headline: 'test',
-        authorId: authorId,
+        author: authorId,
       },
       body: {
         content: body,
@@ -25,35 +25,100 @@ export class ArticleService {
     return created.save();
   }
 
-  async getArticles(limit?: number, latest?: boolean, authorId?: string): Promise<Article[]> {
-    const filter: Record<string, any> = {};
+  async getArticles({
+    search,
+    limit = 50,
+    latest,
+    authorId,
+  }: {
+    search?: string;
+    limit?: number;
+    latest?: boolean;
+    authorId?: string;
+  }): Promise<Article[]> {
+    const pipeline: any[] = [];
+    if (search) {
+      pipeline.push({
+        $search: {
+          index: 'default',
+          compound: {
+            should: [
+              {
+                text: {
+                  query: search,
+                  path: 'header.title',
+                  score: { boost: { value: 5 } },
+                },
+              },
+              {
+                text: {
+                  query: search,
+                  path: 'header.headline',
+                  score: { boost: { value: 3 } },
+                },
+              },
+              {
+                text: {
+                  query: search,
+                  path: 'body.content',
+                },
+              },
+            ],
+          },
+        },
+      });
+    }
 
     if (authorId) {
-      filter['header.authorId'] = authorId;
+      pipeline.push({
+        $match: { 'header.author': authorId },
+      });
     }
 
-    const query = this.model.find(filter);
-
-    if (latest) {
-      query.sort({ createdAt: -1 });
+    if (!search && latest) {
+      pipeline.push({
+        $sort: { createdAt: -1 },
+      });
     }
 
-    query.limit(limit ?? 500);
+    pipeline.push({ $limit: Number(limit) || 50 });
 
-    return query.exec();
+    pipeline.push({
+      $project: {
+        header: 1,
+        body: 1,
+        meta: 1,
+        createdAt: 1,
+        score: search ? { $meta: 'searchScore' } : undefined,
+      },
+    });
+
+    const res = await this.model.aggregate<Article>(pipeline).exec();
+    const populatedArticles = await this.model.populate(res as unknown as Document[], {
+      path: 'header.author',
+      select: 'displayName userName profilePictureUrl email',
+    });
+
+    return populatedArticles;
   }
 
   async getArticle(id: string): Promise<Article | null> {
-    const query = this.model.find({
-      _id: id,
-    });
-
-    if (query == null) {
+    if (typeof id !== 'string') {
       return null;
     }
 
-    const result = await query.exec();
-    const article = result[0];
+    const article = await this.model
+      .findOne({ _id: { $eq: id } })
+      .populate({
+        path: 'header.author',
+        select: 'displayName userName profilePictureUrl',
+      })
+      .lean()
+      .exec();
+
+    if (article == null) {
+      return null;
+    }
 
     article.meta.views = article.meta.views + 1;
     await this.model.findByIdAndUpdate(article._id, { $set: article }, { new: true }).exec();

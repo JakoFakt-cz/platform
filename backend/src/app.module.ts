@@ -9,6 +9,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AuthModule } from './auth/auth.module';
 import { ArticleModule } from './article/article.module';
+import { UserModule } from './user/user.module';
 import { MailModule } from './mail/mail.module';
 
 @Module({
@@ -47,6 +48,7 @@ import { MailModule } from './mail/mail.module';
 
     ArticleModule,
 
+    UserModule,
     MailModule,
   ],
   controllers: [AppController],

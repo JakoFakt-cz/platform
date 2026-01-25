@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { Article } from './schema/article.schema';
+import { Body, Controller, Get, Post, Query, ValidationPipe } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { QueryArticlesDto } from './dto/query-articles.dto';
 import { Throttle } from '@nestjs/throttler';
+import { Article } from './schema/article.schema';
+import { GetArticlesDto } from './dto/get-articles.dto';
 import { GetArticleDto } from './dto/get-article.dto';
 
 @Controller('articles')
@@ -12,9 +12,16 @@ export class ArticleController {
 
   @Get()
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
-  async getArticles(@Body() dto: QueryArticlesDto): Promise<Article[]> {
-    if (dto == null) return this.service.getArticles(5, false, '');
-    return this.service.getArticles(dto.limit, dto.latest, dto.authorId);
+  async getArticles(
+    @Query(new ValidationPipe({ transform: true, forbidNonWhitelisted: true }))
+    dto: GetArticlesDto,
+  ): Promise<Article[]> {
+    return this.service.getArticles({
+      search: dto.query,
+      latest: dto.latest,
+      authorId: dto.authorId,
+      limit: dto.limit,
+    });
   }
 
   @Post('create')
@@ -25,7 +32,10 @@ export class ArticleController {
 
   @Get('exact')
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
-  async getArticle(@Body() dto: GetArticleDto): Promise<Article | null> {
+  async getArticle(
+    @Query(new ValidationPipe({ transform: true, forbidNonWhitelisted: true }))
+    dto: GetArticleDto,
+  ): Promise<Article | null> {
     return this.service.getArticle(dto.id);
   }
 }

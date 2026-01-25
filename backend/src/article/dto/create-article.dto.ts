@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateArticleDto {
   @IsString()
@@ -8,7 +8,6 @@ export class CreateArticleDto {
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d+$/)
   readonly authorId: string;
 
   @IsString()
