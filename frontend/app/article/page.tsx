@@ -12,7 +12,6 @@ export default function PostDetail() {
   const params = useSearchParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [article, setArticle] = useState<ArticleModel | null>(null);
-  const [createdWhen, setCreatedWhen] = useState<string>();
 
   const idParam = params.get('id');
 
@@ -26,11 +25,6 @@ export default function PostDetail() {
       setLoading(false);
     });
   }, [idParam]);
-
-  useEffect(() => {
-    if (article == null) setCreatedWhen(FormatWhenMessage(new Date()));
-    else setCreatedWhen(FormatWhenMessage(new Date(article.createdAt)));
-  }, [article]);
 
   if (loading) {
     return (

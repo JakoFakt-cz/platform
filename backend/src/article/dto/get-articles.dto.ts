@@ -1,7 +1,9 @@
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsMongoId,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -11,8 +13,8 @@ import {
 
 export class GetArticlesDto {
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
   @Min(1)
   @Max(100)
   readonly limit?: number;
@@ -25,11 +27,11 @@ export class GetArticlesDto {
 
   @IsBoolean()
   @IsOptional()
+  @Type(() => Boolean)
   readonly latest?: boolean;
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(50)
   readonly query?: string;
 }

@@ -1,10 +1,108 @@
+"use client";
+
 import Image from 'next/image';
 import Search from "@/components/composites/Search";
 import { Icon } from '@iconify/react';
+import LoaderComponent from '@/components/loader';
+import { ArticleModel, RetrieveArticlesFromBackend } from '@/actions/article';
+import { useEffect, useState } from 'react';
+import ArticleComponent from '@/components/composites/article/ArticleComponent';
+import { FormatTimeArticle } from '@/formatters/timeformatter';
 
 export default function Home() {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [articles, setArticles] = useState<ArticleModel[]>();
+  const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
 
+  useEffect(() => {
+    RetrieveArticlesFromBackend({ latest: true, limit: 9 }).then((value) => {
+      setArticles(value);
+      setTopArticle(value[0]);
+      setLoading(false);
+    })
+  }, []);
+
+  if (loading) {
     return (
+      <main className={'w-full'}>
+        {/*   HERO SEKCE   */}
+        <section className={'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'}>
+          <Image
+            src={'/images/background-pattern.png'}
+            alt={'Vzor pozadí'}
+            width={2560}
+            height={1440}
+            className={
+              'w-full h-100 object-cover scale-150 absolute -z-10 select-none'
+            }
+          />
+          <div
+            className={
+              'w-full mt-70 h-100 absolute bottom-0 left-0 bg-linear-to-b from-transparent to-secondary'
+            }
+          />
+
+          <h2
+            className={
+              'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
+            }
+          >
+            {/* TODO: Doladit design hlavního textu */}
+            {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
+            tohle <span className={'underline'}>je</span>,<br />
+            <span className={'text-accent'}>dokonalé hero</span>
+          </h2>
+          <Search/>
+        </section>
+        <section className="w-full relative overflow-hidden items-center justify-center px-5 md:px-30 py-16 flex flex-col gap-4">
+          <span className='font-bold text-primary text-shadow-lg'>Načítání článků...</span>
+          <LoaderComponent size="normal" color='#2d4059' />
+        </section>
+      </main>
+    );
+  }
+
+  if (topArticle == null) {
+    return (
+      <main className={'w-full'}>
+        {/*   HERO SEKCE   */}
+        <section className={'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'}>
+          <Image
+            src={'/images/background-pattern.png'}
+            alt={'Vzor pozadí'}
+            width={2560}
+            height={1440}
+            className={
+              'w-full h-100 object-cover scale-150 absolute -z-10 select-none'
+            }
+          />
+          <div
+            className={
+              'w-full mt-70 h-100 absolute bottom-0 left-0 bg-linear-to-b from-transparent to-secondary'
+            }
+          />
+
+          <h2
+            className={
+              'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
+            }
+          >
+            {/* TODO: Doladit design hlavního textu */}
+            {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
+            tohle <span className={'underline'}>je</span>,<br />
+            <span className={'text-accent'}>dokonalé hero</span>
+          </h2>
+          <Search/>
+        </section>
+        <section className="w-full relative overflow-hidden items-center justify-center px-5 md:px-30 py-16 flex flex-col gap-4">
+          <span className='font-bold text-primary text-shadow-lg'>Omlouváme se, ale žádný článek jsme nenašli...</span>
+          <Icon icon="mage:robot-sad" width="48" height="48" />
+        </section>
+      </main>
+    );
+  }
+
+  return (
     <main className={'w-full'}>
       {/*   HERO SEKCE   */}
       <section
@@ -40,41 +138,19 @@ export default function Home() {
           <Search/>
       </section>
         <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-5 md:px-30">
-            <div className="w-full shadow-xl rounded-2xl p-5 mb-10">
-                <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-6 -m-5">
-                    Právě koluje
-                </div>
-                <div className="mt-10">
-                    <div className="flex-row flex items-center content-center gap-1.5 mb-3">
-                        <img src="favicon.ico" width="18" height="18" className="rounded-xl"/>
-                        <span className="text-sm font-semibold">Někdo Někdo</span>
-                        <span className="text-sm">1/1/2000</span>
-                    </div>
-                    <hr className="border-primary my-3"/>
-                    <h1 className="text-3xl font-semibold mb-1">
-                        Dechberoucí header
-                    </h1>
-                    <span>
-                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula egestas nulla, et sollicitudin sem purus in lacus. Sed convallis magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id, malesuada in, quam.
-                    </span>
-                </div>
-                <div className="mt-5 flex-row flex items-center gap-2">
-                    <div className="border-1 rounded-full flex px-2 py-1 items-center">
-                        <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                            <Icon icon="bx:up-arrow"/>
-                        </button>
-                        <span className="px-1">0</span>
-                        <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                            <Icon icon="bx:down-arrow"/>
-                        </button>
-                    </div>
-                    <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"><Icon icon="material-symbols:comment-outline"/>0</a>
-                    <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst</a>
-                    <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
-                        <Icon icon="ci:flag" className=""/>
-                        Nahlásit
-                    </a>
-                </div>
+            <div className="mb-4 w-full">
+              <ArticleComponent
+                article={{
+                  description: topArticle.header.headline,
+                  author: topArticle.header.author.displayName,
+                  authorImage: topArticle.header.author.profilePictureUrl,
+                  tagline: topArticle.header.title,
+                  numberOfComments: 0, //TODO: add number of comments
+                  votes: 0, //TODO: add number of views
+                  id: topArticle._id,
+                  date: FormatTimeArticle(new Date(topArticle.createdAt)),
+                }}
+              />
             </div>
         </section>
         <section className="w-full flex flex-col items-center justify-center px-4 md:px-30">
@@ -105,39 +181,30 @@ export default function Home() {
                 </a>
             </div>
         </section>
-        <section className="w-full flex flex-col items-center justify-center px-5 md:px-30">
+        {articles && articles.length > 1 && (
+          <section className="w-full flex flex-col items-center justify-center px-5 md:px-30">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
-                <div className="shadow-xl rounded-2xl border p-5">
-                    <div className="flex-row flex items-center content-center gap-1.5 mb-3">
-                        <img src="favicon.ico" width="18" height="18" className="rounded-xl"/>
-                        <span className="text-sm font-semibold">Někdo Někdo</span>
-                        <span className="text-sm">1/1/2000</span>
-                    </div>
-                    <hr className="border-primary my-3"/>
-                    <h1 className="text-2xl font-semibold mb-1">Tohle je header</h1>
-                    <span>
-                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Fusce consectetuer risus a nunc. Vivamus porttitor turpis ac leo. Etiam egestas wisi a erat. Integer tempor. Aliquam erat volutpat. Morbi imperdiet, mauris ac auctor dictum, nisl ligula egestas nulla, et sollicitudin sem purus in lacus. Sed convallis magna eu sem. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Donec quis nibh at felis congue commodo. Etiam dui sem, fermentum vitae, sagittis id, malesuada in, quam.
-                    </span>
-                    <div className="mt-5 flex-row flex items-center gap-2">
-                        <div className="border-1 rounded-full flex px-2 py-1 items-center">
-                            <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                                <Icon icon="bx:up-arrow"/>
-                            </button>
-                            <span className="px-1">0</span>
-                            <button className="hover:scale-120 transition-all hover:cursor-pointer">
-                                <Icon icon="bx:down-arrow"/>
-                            </button>
-                        </div>
-                        <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"><Icon icon="material-symbols:comment-outline"/>0</a>
-                        <a className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">Číst</a>
-                        <a className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all">
-                            <Icon icon="ci:flag" className=""/>
-                            Nahlásit
-                        </a>
-                    </div>
-                </div>
+              {articles?.filter((article) => article._id != topArticle._id).map((article, index) => {
+                return (
+                  <div key={index}>
+                    <ArticleComponent
+                      article={{
+                        description: article.header.headline,
+                        author: article.header.author.displayName,
+                        authorImage: article.header.author.profilePictureUrl,
+                        tagline: article.header.title,
+                        numberOfComments: 5,
+                        votes: -2,
+                        id: article._id,
+                        date: FormatTimeArticle(new Date(article.createdAt)),
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
-        </section>
+          </section>
+        )}
     </main>
   );
 }

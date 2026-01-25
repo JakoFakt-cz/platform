@@ -21,17 +21,26 @@ export interface ArticleModel {
 
 export async function RetrieveArticlesFromBackend({ 
   query,
+  limit = 5,
+  latest,
 }: {
-  query: string,
+  query?: string,
+  limit?: number,
+  latest?: boolean,
 }): Promise<ArticleModel[]> {
+  var queryParams = "";
+  queryParams = addQueryParam(queryParams, "query", query);
+  queryParams = addQueryParam(queryParams, "limit", limit);
+  queryParams = addQueryParam(queryParams, "latest", latest);
   const res = await fetch(
-    `${process.env.BACKEND_URL}/articles?query=${query}`,
+    `${process.env.BACKEND_URL}/articles${queryParams}`,
     {
       method: "GET",
     }
   );
 
   if (!res.ok) {
+    console.error(queryParams);
     throw new Error(`Failed to find articles with query ${query}. ${res.statusText}`);
   }
 
@@ -55,4 +64,10 @@ export async function RetrieveExactArticleFromBackend({
   }
 
   return res.json();
+}
+
+function addQueryParam(input: string, paramName: string, paramValue?: any): string {
+  if (!paramValue) return input;
+  const separator = input.includes("?") ? "&" : "?";
+  return input + separator + paramName + "=" + paramValue;
 }

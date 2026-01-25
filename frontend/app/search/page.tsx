@@ -104,8 +104,6 @@ export default function SearchPage() {
     );
   }
 
-  console.log(topArticle);
-
   return (
     <main className={'w-full'}>
       {/*   HERO SEKCE   */}
@@ -157,29 +155,32 @@ export default function SearchPage() {
           />
         </div>
       </section>
-      <section className="w-full flex flex-col gap-4 px-5 md:px-30">
-        <h2 className="text-2xl font-semibold">Další vyhledané výsledky</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
-          {[topArticle, ...articles!!].map((article, index) => {
-            return (
-              <div key={index}>
-                <ArticleComponent
-                  article={{
-                    description: article.header.headline,
-                    author: article.header.author.displayName,
-                    authorImage: article.header.author.profilePictureUrl,
-                    tagline: article.header.title,
-                    numberOfComments: 5,
-                    votes: -2,
-                    id: article._id,
-                    date: FormatTimeArticle(new Date(article.createdAt)),
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      {articles && articles.length > 1 && (
+        <section className="w-full flex flex-col gap-4 px-5 md:px-30">
+          <h2 className="text-2xl font-semibold">Další vyhledané výsledky</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
+          {articles?.filter((article) => article._id != topArticle._id).map((article, index) => {
+              return (
+                <div key={index}>
+                  <ArticleComponent
+                    article={{
+                      description: article.header.headline,
+                      author: article.header.author.displayName,
+                      authorImage: article.header.author.profilePictureUrl,
+                      tagline: article.header.title,
+                      numberOfComments: 5,
+                      votes: -2,
+                      id: article._id,
+                      date: FormatTimeArticle(new Date(article.createdAt)),
+                    }}
+                  />
+                </div>
+              );
+            })
+          }
+          </div>
+        </section>
+      )}
     </main>
   );
 }
