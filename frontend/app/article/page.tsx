@@ -119,9 +119,9 @@ export default function PostDetail() {
           </div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <img src="favicon.ico" width="45" height="45" className="rounded-full border-2 border-secondary" />
+              <img src={article.header.author.profilePictureUrl} width="45" height="45" className="rounded-full border-2 border-secondary" />
               <div className="flex flex-col">
-                <span className="font-bold text-primary">{article.header.authorId}</span>
+                <span className="font-bold text-primary">{article.header.author.displayName}</span>
                 <span className="text-sm text-gray-500">
                   {FormatWhenMessage(new Date(article.createdAt))} • {FormatTimeArticle(new Date(article.createdAt))}
                   </span>

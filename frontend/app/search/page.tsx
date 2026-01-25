@@ -161,14 +161,13 @@ export default function SearchPage() {
         <h2 className="text-2xl font-semibold">Další vyhledané výsledky</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
           {[topArticle, ...articles!!].map((article, index) => {
-            const date = FormatTimeArticle(new Date(article.createdAt));
-
             return (
               <div key={index}>
                 <ArticleComponent
                   article={{
                     description: article.header.headline,
-                    author: article.header.authorId,
+                    author: article.header.author.displayName,
+                    authorImage: article.header.author.profilePictureUrl,
                     tagline: article.header.title,
                     numberOfComments: 5,
                     votes: -2,
