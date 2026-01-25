@@ -48,11 +48,8 @@ import { MailModule } from './mail/mail.module';
 
     ArticleModule,
 
-<<<<<<< HEAD
     UserModule,
-=======
     MailModule,
->>>>>>> master
   ],
   controllers: [AppController],
   providers: [AppService],
