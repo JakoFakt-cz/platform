@@ -8,6 +8,6 @@ export class UserService {
   constructor(@InjectModel(User.name) private model: Model<User>) {}
 
   async getUserById({ id }: { id: string }): Promise<User | null> {
-    return await this.model.findOne({ _id: id });
+    return await this.model.findOne({ _id: { $eq: id } });
   }
 }
