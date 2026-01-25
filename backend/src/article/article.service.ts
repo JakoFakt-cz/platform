@@ -103,10 +103,12 @@ export class ArticleService {
   }
 
   async getArticle(id: string): Promise<Article | null> {
+    if (typeof id !== 'string') {
+      return null;
+    }
+
     const article = await this.model
-      .findOne({
-        _id: id,
-      })
+      .findOne({ _id: { $eq: id } })
       .populate({
         path: 'header.author',
         select: 'displayName userName profilePictureUrl',
