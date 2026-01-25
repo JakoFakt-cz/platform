@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, ValidationPipe } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { Throttle } from '@nestjs/throttler';
 import { Article } from './schema/article.schema';
+import { GetArticlesDto } from './dto/get-articles.dto';
+import { GetArticleDto } from './dto/get-article.dto';
 
 @Controller('articles')
 export class ArticleController {
@@ -11,12 +13,15 @@ export class ArticleController {
   @Get()
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
   async getArticles(
-    @Query('limit') limit?: number,
-    @Query('latest') latest?: boolean,
-    @Query('query') query?: string,
-    @Query('authorId') authorId?: string,
+    @Query(new ValidationPipe({ transform: true, forbidNonWhitelisted: true }))
+    dto: GetArticlesDto,
   ): Promise<Article[]> {
-    return this.service.getArticles({ search: query, limit, latest, authorId });
+    return this.service.getArticles({
+      search: dto.query,
+      latest: dto.latest,
+      authorId: dto.authorId,
+      limit: dto.limit,
+    });
   }
 
   @Post('create')
@@ -27,7 +32,10 @@ export class ArticleController {
 
   @Get('exact')
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
-  async getArticle(@Query('id') id: string): Promise<Article | null> {
-    return this.service.getArticle(id);
+  async getArticle(
+    @Query(new ValidationPipe({ transform: true, forbidNonWhitelisted: true }))
+    dto: GetArticleDto,
+  ): Promise<Article | null> {
+    return this.service.getArticle(dto.id);
   }
 }
