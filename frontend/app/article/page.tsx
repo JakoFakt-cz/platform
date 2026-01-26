@@ -161,7 +161,7 @@ export default function PostDetail() {
         </div>
 
         <div className="mt-8 space-y-4">
-          <h3 className="text-xl font-bold text-primary px-2">Komentáře (x)</h3>
+          <h3 className="text-xl font-bold text-primary px-2">Komentáře ({article.meta.comments.length})</h3>
 
           <div className="bg-white p-4 rounded-2xl shadow-md border border-primary/5 flex gap-4">
             <div className="w-full">
@@ -179,26 +179,32 @@ export default function PostDetail() {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5">
-              <div className="flex items-center gap-2 mb-2">
-                <img src="favicon.ico" width="30" height="30" className="rounded-full border-2 border-secondary" />
-                <span className="font-bold text-sm text-primary">Někdo Někdo</span>
-                <span className="text-xs text-gray-400">před x hodinami</span>
-              </div>
-          
-              <p className="text-gray-700 ml-10">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
-              </p>
-            
-              <div className="ml-10 mt-3 flex items-center gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-2">
-                  <Icon icon="bx:up-arrow" className="cursor-pointer hover:text-primary" />
-                  <span className="font-bold">xyz</span>
-                  <Icon icon="bx:down-arrow" className="cursor-pointer hover:text-primary" />
-                </div>
-                <button className="hover:text-primary cursor-pointer font-medium">Odpovědět</button>
-              </div>
-            </div>
+            {article.meta.comments.map((comment, index) => {
+              const createdAtDate = new Date(comment.createdAt);
+
+              return (
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5" key={index}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Image alt="avatar" src={comment.user.profilePictureUrl} loading='lazy' className='size-7.5 rounded-full border-2 border-secondary' width="30" height="30" />
+                    <span className="font-bold text-sm text-primary">{comment.user.displayName}</span>
+                    <span className="text-xs text-gray-400">{FormatWhenMessage(createdAtDate)}</span>
+                  </div>
+              
+                  <p className="text-gray-700 ml-10">
+                    {comment.content}
+                  </p>
+                
+                  <div className="ml-10 mt-3 flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <Icon icon="bx:up-arrow" className="cursor-pointer hover:text-primary" />
+                      <span className="font-bold">xyz</span>
+                      <Icon icon="bx:down-arrow" className="cursor-pointer hover:text-primary" />
+                    </div>
+                    <button className="hover:text-primary cursor-pointer font-medium">Odpovědět</button>
+                  </div>
+                </div>  
+              );
+            })}
           </div>
         </div>
       </section>

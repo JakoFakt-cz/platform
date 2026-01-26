@@ -9,7 +9,7 @@ export class HeaderProps {
   @Prop({ required: true })
   headline: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   author: Types.ObjectId;
 }
 

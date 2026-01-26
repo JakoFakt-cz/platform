@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Article } from './schema/article.schema';
 
 @Injectable()
@@ -20,6 +20,12 @@ export class ArticleService {
       meta: {
         views: 0,
         tags: ['none'],
+        comments: [
+          {
+            content: 'Nesnasim madanrinky',
+            user: new Types.ObjectId('69492bc1e2b63e716b2dd9ca'),
+          },
+        ],
       },
     });
     return created.save();
@@ -109,10 +115,19 @@ export class ArticleService {
 
     const article = await this.model
       .findOne({ _id: { $eq: id } })
-      .populate({
-        path: 'header.author',
-        select: 'displayName userName profilePictureUrl',
-      })
+      .populate([
+        {
+          path: 'header.author',
+          select: 'displayName userName profilePictureUrl',
+        },
+        {
+          path: 'meta.comments',
+          populate: {
+            path: 'user',
+            select: 'displayName userName profilePictureUrl',
+          }
+        },
+      ])
       .lean()
       .exec();
 

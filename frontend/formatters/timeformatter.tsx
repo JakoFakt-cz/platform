@@ -20,9 +20,6 @@ function pluralize(
 export function FormatWhenMessage(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  console.log("diff: " + diffMs)
-  console.log(now.toISOString());
-  console.log(date.toISOString());
 
   if (diffMs < 0) return "v budoucnosti";
 

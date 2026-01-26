@@ -1,5 +1,6 @@
 'use server';
 
+import { CommentModel } from './comment';
 import { UserModel } from './user';
 
 export interface ArticleModel {
@@ -16,6 +17,7 @@ export interface ArticleModel {
   meta: {
     views: number;
     tags?: string[];
+    comments: CommentModel[];
   };
 }
 
