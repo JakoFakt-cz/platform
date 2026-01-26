@@ -125,18 +125,16 @@ export class ArticleService {
           populate: {
             path: 'user',
             select: 'displayName userName profilePictureUrl',
-          }
+          },
         },
       ])
       .lean()
       .exec();
 
-    if (article == null) {
-      return null;
-    }
+    if (!article) return null;
 
-    article.meta.views = article.meta.views + 1;
-    await this.model.findByIdAndUpdate(article._id, { $set: article }, { new: true }).exec();
+    await this.model.findByIdAndUpdate(article._id, { $inc: { 'meta.views': 1 } });
+    article.meta.views += 1;
 
     return article;
   }
