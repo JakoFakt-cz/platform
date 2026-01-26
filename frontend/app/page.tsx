@@ -49,8 +49,8 @@ export default function Home() {
           >
             {/* TODO: Doladit design hlavního textu */}
             {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
-            tohle <span className={'underline'}>je</span>,<br />
-            <span className={'text-accent'}>dokonalé hero</span>
+            Odhalujeme, <span className={'underline'}>jak je to</span>,<br />
+            <span className={'text-accent'}>doopravdy</span>
           </h2>
           <Search/>
         </section>
@@ -132,59 +132,97 @@ export default function Home() {
         >
           {/* TODO: Doladit design hlavního textu */}
           {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
-          tohle <span className={'underline'}>je</span>,<br />
-          <span className={'text-accent'}>dokonalé hero</span>
+          <span className={'underline'}>Odhalujeme</span>, jak je to,<br />
+          <span className={'text-accent'}>doopravdy</span>
         </h2>
-          <Search/>
+        <Search />
       </section>
-        <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-5 md:px-30">
-            <div className="mb-4 w-full">
-              <ArticleComponent
-                article={{
-                  description: topArticle.header.headline,
-                  author: topArticle.header.author.displayName,
-                  authorImage: topArticle.header.author.profilePictureUrl,
-                  tagline: topArticle.header.title,
-                  numberOfComments: 0, //TODO: add number of comments
-                  votes: 0, //TODO: add number of views
-                  id: topArticle._id,
-                  date: FormatTimeArticle(new Date(topArticle.createdAt)),
-                }}
-              />
-            </div>
-        </section>
-        <section className="w-full flex flex-col items-center justify-center px-4 md:px-30">
-            <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 shadow-xl rounded-2xl border border-primary mb-10 overflow-hidden">
-                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
-                    <span className="font-semibold mt-2 text-center">Kategorie</span>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
-                    <span className="font-semibold mt-2 text-center">Kategorie</span>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
-                    <span className="font-semibold mt-2 text-center">Kategorie</span>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
-                    <span className="font-semibold mt-2 text-center">Kategorie</span>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
-                    <span className="font-semibold mt-2 text-center">Kategorie</span>
-                </a>
-                <a href="/" className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r">
-                    <Icon icon="material-symbols:category-outline-rounded" fontSize="24" />
-                    <span className="font-semibold mt-2 text-center">Kategorie</span>
-                </a>
-            </div>
-        </section>
-        {articles && articles.length > 1 && (
-          <section className="w-full flex flex-col items-center justify-center px-5 md:px-30">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
-              {articles?.filter((article) => article._id != topArticle._id).map((article, index) => {
+      <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-5 md:px-30">
+        <div className="mb-4 w-full">
+          <ArticleComponent
+            article={{
+              description: topArticle.header.headline,
+              author: topArticle.header.author.displayName,
+              authorImage: topArticle.header.author.profilePictureUrl,
+              tagline: topArticle.header.title,
+              numberOfComments: 0, //TODO: add number of comments
+              votes: 0, //TODO: add number of views
+              id: topArticle._id,
+              date: FormatTimeArticle(new Date(topArticle.createdAt)),
+            }}
+          />
+        </div>
+      </section>
+      <section className="w-full flex flex-col items-center justify-center px-4 md:px-30">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 shadow-xl rounded-2xl border border-primary mb-10 overflow-hidden">
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="24"
+            />
+            <span className="font-semibold mt-2 text-center">Kategorie</span>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="24"
+            />
+            <span className="font-semibold mt-2 text-center">Kategorie</span>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="24"
+            />
+            <span className="font-semibold mt-2 text-center">Kategorie</span>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="24"
+            />
+            <span className="font-semibold mt-2 text-center">Kategorie</span>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="24"
+            />
+            <span className="font-semibold mt-2 text-center">Kategorie</span>
+          </a>
+          <a
+            href="/"
+            className="p-5 flex flex-col items-center hover:bg-primary hover:text-white transition-all border-b border-r border-primary/20 lg:border-b-0 last:border-r-0 lg:[&:not(:last-child)]:border-r"
+          >
+            <Icon
+              icon="material-symbols:category-outline-rounded"
+              fontSize="24"
+            />
+            <span className="font-semibold mt-2 text-center">Kategorie</span>
+          </a>
+        </div>
+      </section>
+      {articles && articles.length > 1 && (
+        <section className="w-full flex flex-col items-center justify-center px-5 md:px-30">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
+            {articles
+              ?.filter((article) => article._id != topArticle._id)
+              .map((article, index) => {
                 return (
                   <div key={index}>
                     <ArticleComponent
@@ -202,9 +240,9 @@ export default function Home() {
                   </div>
                 );
               })}
-            </div>
-          </section>
-        )}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
