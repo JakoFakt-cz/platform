@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRef, useState } from 'react';
 import Image from 'next/image';
@@ -11,7 +11,7 @@ import { redirect } from 'next/navigation';
 
 const Menu = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const testItems = [
@@ -76,6 +76,7 @@ const Menu = () => {
             <SecondaryButton
               label={'Přihlásit se'}
               icon={'material-symbols:person-outline'}
+              href={'/auth'}
               className={
                 'bg-secondary/85 hover:bg-primary/10 hover:text-primary!'
               }
