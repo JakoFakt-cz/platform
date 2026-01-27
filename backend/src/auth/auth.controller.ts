@@ -161,7 +161,7 @@ export class AuthController {
 
     const redirectUrl =
       this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
-      'http://localhost:3000/oauth-success';
+      'http://localhost:3000/api/oauth-success';
     response.redirect(redirectUrl);
   }
 
