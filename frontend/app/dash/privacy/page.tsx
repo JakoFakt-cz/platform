@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import {Icon} from "@iconify/react";
-import SessionRow from "./SessionRow";
+import SessionRow from "../../../components/composites/SessionRow";
 
 export default function PrivacyPage() {
     return (
