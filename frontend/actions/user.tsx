@@ -5,6 +5,7 @@ export interface UserModel {
   displayName: string,
   email: string;
   profilePictureUrl: string;
+  _id: string;
 }
 
 export interface UnsecureUserModel extends UserModel {

@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import Link from "next/link";
 import { ReactNode } from "react";
 
 type borderType = "shadow" | "border" | "none";
@@ -51,10 +52,13 @@ export default function ArticleComponent({
             <Icon icon="bx:down-arrow"/>
           </button>
         </div>
-        <a className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
+        <Link
+          className="border flex items-center gap-1 text-primary px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all"
+          href={`/article?id=${article.id}#comments`}
+        >
           <Icon icon="material-symbols:comment-outline"/>
           {article.numberOfComments}
-        </a>
+        </Link>
         <a href={`/article?id=${article.id}`} className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
           Číst
         </a>

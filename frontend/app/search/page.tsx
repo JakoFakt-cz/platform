@@ -147,7 +147,7 @@ export default function SearchPage() {
               author: topArticle.header.author.displayName,
               authorImage: topArticle.header.author.profilePictureUrl,
               tagline: topArticle.header.title,
-              numberOfComments: 0, //TODO: add number of comments
+              numberOfComments: topArticle.meta.comments.length,
               votes: 0, //TODO: add number of views
               id: topArticle._id,
               date: FormatTimeArticle(new Date(topArticle.createdAt)),
@@ -168,7 +168,7 @@ export default function SearchPage() {
                       author: article.header.author.displayName,
                       authorImage: article.header.author.profilePictureUrl,
                       tagline: article.header.title,
-                      numberOfComments: 5,
+                      numberOfComments: article.meta.comments.length,
                       votes: -2,
                       id: article._id,
                       date: FormatTimeArticle(new Date(article.createdAt)),

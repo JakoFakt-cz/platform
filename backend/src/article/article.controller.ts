@@ -5,6 +5,7 @@ import { Throttle } from '@nestjs/throttler';
 import { Article } from './schema/article.schema';
 import { GetArticlesDto } from './dto/get-articles.dto';
 import { GetArticleDto } from './dto/get-article.dto';
+import { AddCommentDto } from './dto/comment/add-comment.dto';
 
 @Controller('articles')
 export class ArticleController {
@@ -37,5 +38,13 @@ export class ArticleController {
     dto: GetArticleDto,
   ): Promise<Article | null> {
     return this.service.getArticle(dto.id);
+  }
+
+  @Post('comment')
+  @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
+  async addCommentToArticle(
+    @Body() dto: AddCommentDto,
+  ): Promise<{ article: Article | null; newCommentId: string }> {
+    return await this.service.addCommentToArticle(dto.articleId, dto.comment);
   }
 }

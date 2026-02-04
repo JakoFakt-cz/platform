@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Article } from './schema/article.schema';
+import { Comment } from './schema/comment.schema';
+import { CommentDto } from './dto/comment/comment.dto';
 
 @Injectable()
 export class ArticleService {
-  constructor(@InjectModel(Article.name) private model: Model<Article>) {}
+  constructor(
+    @InjectModel(Article.name) private articleModel: Model<Article>,
+    @InjectModel(Comment.name) private commentModel: Model<Comment>,
+  ) {}
 
   async createArticle(title: string, authorId: string, body: string): Promise<Article> {
-    const created = new this.model({
+    const created = new this.articleModel({
       header: {
         title: title,
         headline: 'test',
@@ -99,8 +104,8 @@ export class ArticleService {
       },
     });
 
-    const res = await this.model.aggregate<Article>(pipeline).exec();
-    const populatedArticles = await this.model.populate(res as unknown as Document[], {
+    const res = await this.articleModel.aggregate<Article>(pipeline).exec();
+    const populatedArticles = await this.articleModel.populate(res as unknown as Document[], {
       path: 'header.author',
       select: 'displayName userName profilePictureUrl email',
     });
@@ -113,7 +118,7 @@ export class ArticleService {
       return null;
     }
 
-    const article = await this.model
+    const article = await this.articleModel
       .findOne({ _id: { $eq: id } })
       .populate([
         {
@@ -133,9 +138,30 @@ export class ArticleService {
 
     if (!article) return null;
 
-    await this.model.findByIdAndUpdate(article._id, { $inc: { 'meta.views': 1 } });
+    await this.articleModel.findByIdAndUpdate(article._id, { $inc: { 'meta.views': 1 } });
     article.meta.views += 1;
 
     return article;
+  }
+
+  async addCommentToArticle(
+    id: string,
+    commentDto: CommentDto,
+  ): Promise<{ article: Article | null; newCommentId: string }> {
+    const comment = new this.commentModel({
+      user: commentDto.user,
+      content: commentDto.content,
+    });
+
+    const article = await this.articleModel.findByIdAndUpdate(
+      id,
+      { $push: { 'meta.comments': comment } },
+      { new: true },
+    );
+
+    return {
+      article: article,
+      newCommentId: comment._id.toString(),
+    };
   }
 }

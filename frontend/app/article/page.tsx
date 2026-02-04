@@ -1,23 +1,61 @@
 "use client";
 
 import { ArticleModel, RetrieveExactArticleFromBackend } from '@/actions/article';
+import { AddCommentToArticle } from '@/actions/comment';
 import LoaderComponent from '@/components/loader';
+import { scrollToHash } from '@/components/scroll';
 import { FormatTimeArticle, FormatWhenMessage } from '@/formatters/timeformatter';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import { redirect, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function PostDetail() {
   const params = useSearchParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [article, setArticle] = useState<ArticleModel | null>(null);
-
+  const [writtenComment, setWrittenComment] = useState<string>('');
   const idParam = params.get('id');
 
   if (!idParam) {
     redirect('/');
   }
+
+  useEffect(() => {
+    const onHashChange = () => scrollToHash();
+
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (!article) return;
+
+    scrollToHash();
+  }, [article]);
+
+  const SendComment = () => {
+    AddCommentToArticle({ 
+      articleId: idParam, 
+      comment: {
+        userId: '69492bc1e2b63e716b2dd9ca',
+        content: writtenComment,
+      }
+    }).then((request) => {
+      if (request.status === 201) {
+        setWrittenComment('');
+        toast.success('Komentář úspěšně odeslán!');
+        window.location.reload();
+      }
+      else {
+        toast(`${request.status} ${request.statusText}: Stala se chyba při odesílání komentáře.`);
+        console.log(request.message);
+      }
+    }).catch((error) => {
+      console.log(error);
+    });
+  };
 
   useEffect(() => {
     RetrieveExactArticleFromBackend({ id: idParam }).then((article) => {
@@ -147,7 +185,13 @@ export default function PostDetail() {
                 </button>
               </div>
 
-              <button className="cursor-pointer flex items-center gap-2 text-primary px-4 py-2 rounded-full hover:bg-secondary/20 transition-all">
+              <button 
+                className="cursor-pointer flex items-center gap-2 text-primary px-4 py-2 rounded-full hover:bg-secondary/20 transition-all"
+                onClickCapture={async () => {
+                  await navigator.clipboard.writeText(window.location.href);
+                  toast.success('Odkaz na článek zkopírován do schránky!');
+                }}
+              >
                 <Icon icon="material-symbols:share-outline" fontSize={18} />
                 <span className="font-medium">Sdílet</span>
               </button>
@@ -163,15 +207,27 @@ export default function PostDetail() {
         <div className="mt-8 space-y-4">
           <h3 className="text-xl font-bold text-primary px-2">Komentáře ({article.meta.comments.length})</h3>
 
-          <div className="bg-white p-4 rounded-2xl shadow-md border border-primary/5 flex gap-4">
+          <div className="bg-white p-4 rounded-2xl shadow-md border border-primary/5 flex gap-4" id="comments">
             <div className="w-full">
               <textarea
                 className="w-full bg-secondary/10 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all border border-primary resize-none"
                 placeholder="Napište svůj komentář..."
                 rows={4}
+                onInput={(e) => setWrittenComment(e.currentTarget.value)}
+                value={writtenComment}
+                onKeyDownCapture={(e) => {
+                  if (e.key === 'Enter') {
+                    SendComment(); 
+                  }
+                }}
               />
               <div className="flex justify-end mt-2">
-                <button className="bg-primary text-white px-6 py-1.5 rounded-full font-medium cursor-pointer hover:bg-primary/90 transition-all">
+                <button 
+                  className="bg-primary text-white px-6 py-1.5 rounded-full font-medium cursor-pointer hover:bg-primary/90 transition-all"
+                  onClickCapture={() => {
+                    SendComment();
+                  }}
+                >
                   Odeslat
                 </button>
               </div>
@@ -179,11 +235,11 @@ export default function PostDetail() {
           </div>
 
           <div className="space-y-4">
-            {article.meta.comments.map((comment, index) => {
+            {article.meta.comments.toReversed().map((comment, index) => {
               const createdAtDate = new Date(comment.createdAt);
 
               return (
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5" key={index}>
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5" key={index} id={comment._id}>
                   <div className="flex items-center gap-2 mb-2">
                     <Image alt="avatar" src={comment.user.profilePictureUrl} loading='lazy' className='size-7.5 rounded-full border-2 border-secondary' width="30" height="30" />
                     <span className="font-bold text-sm text-primary">{comment.user.displayName}</span>
