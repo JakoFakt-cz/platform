@@ -47,9 +47,9 @@ export default function DashPage() {
                         <DashboardCard
                             href="/dash/settings"
                             icon="mdi:settings"
-                            title="Nastavení účtu"
+                            title="Nastavení"
                         >
-                            <span>Konfigurace systémových preferencí, jazyka a správa propojených aplikací.</span>
+                            <span>Konfigurace preferencí účtu, notifikace a další.</span>
                         </DashboardCard>
                         <DashboardCard
                             href="/dash/notifications"
