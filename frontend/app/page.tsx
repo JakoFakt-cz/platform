@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import ArticleComponent from '@/components/composites/article/ArticleComponent';
 import { FormatTimeArticle } from '@/formatters/timeformatter';
 
-export default function Home() {
+export default function Dashboard() {
   const [loading, setLoading] = useState<boolean>(false);
   const [articles, setArticles] = useState<ArticleModel[]>();
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
@@ -127,7 +127,7 @@ export default function Home() {
 
         <h2
           className={
-            'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
+            'md:text-7xl text-5x text-center text-balance font-bold text-primary text-shadow-lg z-5'
           }
         >
           {/* TODO: Doladit design hlavního textu */}
