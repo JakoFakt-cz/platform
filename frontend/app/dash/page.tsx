@@ -52,13 +52,6 @@ export default function DashPage() {
                             <span>Konfigurace preferencí účtu, notifikace a další.</span>
                         </DashboardCard>
                         <DashboardCard
-                            href="/dash/notifications"
-                            icon="mdi:bell"
-                            title="Notifikace"
-                        >
-                            <span>Zobrazení a správa komunitních notifikací.</span>
-                        </DashboardCard>
-                        <DashboardCard
                             href="/support"
                             icon="mdi:help-circle"
                             title="Podpora"
