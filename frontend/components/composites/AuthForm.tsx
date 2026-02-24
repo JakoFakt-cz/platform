@@ -3,10 +3,14 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function AuthForm({ backendLink }: { backendLink: string }) {
+  const router = useRouter();
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const handleOtpChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -52,7 +56,47 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
     setStep(2);
   };
 
-  // TODO: přidat logiku pro kontrolu shody hesel, validaci emailu, odeslání formuláře atd.
+  const tryLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoginError(null);
+    setIsLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || !password) {
+      setLoginError('Vyplňte e-mail a heslo.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendLink}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setLoginError('Nesprávný e-mail nebo heslo.');
+        } else if (response.status === 429) {
+          setLoginError('Příliš mnoho pokusů. Zkuste to později.');
+        } else {
+          setLoginError('Něco se pokazilo. Zkuste to znovu.');
+        }
+        return;
+      }
+
+      router.push('/');
+    } catch {
+      setLoginError('Nelze se připojit k serveru. Zkontrolujte připojení.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="border border-primary shadow-xl rounded-2xl p-5 py-10 bg-secondary px-10 w-full max-w-xl">
@@ -72,40 +116,62 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <div className="w-full flex p-0.5 rounded-full border border-primary/30 my-5">
             <button
               type="button"
-              onClick={() => setIsRegister(false)}
+              onClick={() => {
+                setIsRegister(false);
+                setLoginError(null);
+              }}
               className={`w-full cursor-pointer rounded-full py-1 transition-colors duration-150 ${!isRegister ? 'bg-primary text-white' : 'bg-transparent text-primary'}`}
             >
               Přihlášení
             </button>
             <button
               type="button"
-              onClick={() => setIsRegister(true)}
+              onClick={() => {
+                setIsRegister(true);
+                setLoginError(null);
+              }}
               className={`w-full cursor-pointer rounded-full py-1 transition-colors duration-150 ${isRegister ? 'bg-primary text-white' : 'bg-transparent text-primary'}`}
             >
               Registrace
             </button>
           </div>
           {!isRegister ? (
-            <form className="flex flex-col items-center gap-2 w-full">
+            <form
+              className="flex flex-col items-center gap-2 w-full"
+              onSubmit={tryLogin}
+            >
+              {loginError && (
+                <div className="w-full text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {loginError}
+                </div>
+              )}
               <div className="w-full">
-                <label htmlFor="email" className="font-semibold text-sm">
+                <label htmlFor="login-email" className="font-semibold text-sm">
                   Email
                 </label>
                 <input
-                  id="email"
+                  id="login-email"
+                  name="email"
+                  type="email"
                   className="bg-white border-primary border rounded-lg py-2 w-full px-3 font-medium focus:ring-2 ring-primary/20 outline-none"
                   placeholder="jmeno@domena.cz"
+                  required
                 />
               </div>
               <div className="w-full relative">
-                <label htmlFor="password" className="font-semibold text-sm">
+                <label
+                  htmlFor="login-password"
+                  className="font-semibold text-sm"
+                >
                   Heslo
                 </label>
                 <input
-                  id="password"
+                  id="login-password"
+                  name="password"
                   type="password"
                   className="bg-white border-primary border rounded-lg py-2 w-full px-3 font-medium focus:ring-2 ring-primary/20 outline-none"
                   placeholder="Minimálně 8 znaků"
+                  required
                 />
               </div>
               <a
@@ -116,9 +182,10 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               </a>
               <button
                 type="submit"
-                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200"
+                disabled={isLoading}
+                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Přihlásit se
+                {isLoading ? 'Přihlašování...' : 'Přihlásit se'}
               </button>
             </form>
           ) : (

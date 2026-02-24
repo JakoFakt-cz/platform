@@ -50,15 +50,21 @@ export class AuthController {
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
       expires: refreshTokenExpiry,
       path: '/auth/refresh',
     });
 
-    return {
-      accessToken,
-    };
+    response.cookie('jako_access_token', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
+      expires: new Date(
+        Date.now() + (this.configService.get<number>('auth.accessTokenExpiration') || 1800) * 1000,
+      ),
+      domain: this.configService.get<string>('auth.cookieDomain'),
+    });
   }
 
   @Throttle({ default: { limit: 10, ttl: 900000 } })
@@ -69,15 +75,21 @@ export class AuthController {
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
       expires: refreshTokenExpiry,
       path: '/auth/refresh',
     });
 
-    return {
-      accessToken,
-    };
+    response.cookie('jako_access_token', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
+      expires: new Date(
+        Date.now() + (this.configService.get<number>('auth.accessTokenExpiration') || 1800) * 1000,
+      ),
+      domain: this.configService.get<string>('auth.cookieDomain'),
+    });
   }
 
   // TOKEN REFRESHING
@@ -98,15 +110,21 @@ export class AuthController {
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
       expires: expiryDate,
       path: '/auth/refresh',
     });
 
-    return {
-      accessToken,
-    };
+    response.cookie('jako_access_token', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
+      expires: new Date(
+        Date.now() + (this.configService.get<number>('auth.accessTokenExpiration') || 1800) * 1000,
+      ),
+      domain: this.configService.get<string>('auth.cookieDomain'),
+    });
   }
 
   // EMAIL VERIFICATION
@@ -149,20 +167,26 @@ export class AuthController {
       throw new BadRequestException('No user information from Google OAuth');
     }
 
-    const { refreshToken, refreshTokenExpiry } = await this.authService.loginWithOAuth(user);
+    const { accessToken, refreshToken, refreshTokenExpiry } =
+      await this.authService.loginWithOAuth(user);
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
       expires: refreshTokenExpiry,
       path: '/auth/refresh',
     });
 
-    const redirectUrl =
-      this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
-      'http://localhost:3000/api/oauth-success';
-    response.redirect(redirectUrl);
+    response.cookie('jako_access_token', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>('app.env') === 'production',
+      sameSite: 'lax',
+      expires: new Date(
+        Date.now() + (this.configService.get<number>('auth.accessTokenExpiration') || 1800) * 1000,
+      ),
+      domain: this.configService.get<string>('auth.cookieDomain'),
+    });
   }
 
   /* FACEBOOK TEMPORARILY DISABLED
