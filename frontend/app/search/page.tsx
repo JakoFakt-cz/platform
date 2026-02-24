@@ -147,7 +147,7 @@ export default function SearchPage() {
               author: topArticle.header.author.displayName,
               authorImage: topArticle.header.author.profilePictureUrl,
               tagline: topArticle.header.title,
-              numberOfComments: topArticle.meta.comments.length,
+              numberOfComments: (topArticle.meta.comments ?? []).length,
               votes: 0, //TODO: add number of views
               id: topArticle._id,
               date: FormatTimeArticle(new Date(topArticle.createdAt)),
