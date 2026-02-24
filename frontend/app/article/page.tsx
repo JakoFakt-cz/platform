@@ -239,7 +239,7 @@ export default function PostDetail() {
               const createdAtDate = new Date(comment.createdAt);
 
               return (
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5" key={index} id={comment._id}>
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5" key={index} id={(comment as any)._id}>
                   <div className="flex items-center gap-2 mb-2">
                     <Image alt="avatar" src={comment.user.profilePictureUrl} loading='lazy' className='size-7.5 rounded-full border-2 border-secondary' width="30" height="30" />
                     <span className="font-bold text-sm text-primary">{comment.user.displayName}</span>
