@@ -142,7 +142,7 @@ export class AuthService {
 
     if (isCodeValid) {
       await this.OTPModel.deleteMany({ email });
-      await this.UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
+      await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
     }

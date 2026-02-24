@@ -8,7 +8,7 @@ export interface ArticleModel {
   header: {
     title: string;
     headline: string;
-    author: UserModel;
+    author: UserModel | null;
   };
   body: {
     content: string;

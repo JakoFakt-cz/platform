@@ -4,23 +4,77 @@ import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AuthForm({ backendLink }: { backendLink: string }) {
   const router = useRouter();
+  const { setAuthenticated } = useAuth();
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState<string>('');
+  const [otpDigits, setOtpDigits] = useState<string[]>([
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpLoading, setOtpLoading] = useState<boolean>(false);
+  const [resendLoading, setResendLoading] = useState<boolean>(false);
+  const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
   const handleOtpChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
-    if (e.target.value.length === 1 && index < 5) {
+    const value = e.target.value.replace(/\D/g, '');
+    if (!value && e.target.value) return;
+
+    const newDigits = [...otpDigits];
+    newDigits[index] = value.slice(-1);
+    setOtpDigits(newDigits);
+    setOtpError(null);
+
+    if (value && index < 5) {
       const nextInput =
         e.target.parentElement?.querySelectorAll('input')[index + 1];
       if (nextInput) (nextInput as HTMLInputElement).focus();
     }
+  };
+
+  const handleOtpKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      const prevInput = (
+        e.target as HTMLElement
+      ).parentElement?.querySelectorAll('input')[index - 1];
+      if (prevInput) (prevInput as HTMLInputElement).focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData('text')
+      .replace(/\D/g, '')
+      .slice(0, 6);
+    if (!pasted) return;
+    const newDigits = [...otpDigits];
+    for (let i = 0; i < pasted.length; i++) {
+      newDigits[i] = pasted[i];
+    }
+    setOtpDigits(newDigits);
+    setOtpError(null);
+    const container = (e.target as HTMLElement).parentElement;
+    const inputs = container?.querySelectorAll('input');
+    const focusIndex = Math.min(pasted.length, 5);
+    if (inputs?.[focusIndex]) (inputs[focusIndex] as HTMLInputElement).focus();
   };
 
   const tryRegister = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -45,14 +99,26 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       credentials: 'include',
     });
 
-    // TODO: Vyřešit ukládání access tokenu
-
     if (!response.ok) {
       const error = await response.json();
       console.error(error);
       return;
     }
 
+    setAuthenticated(true);
+
+    const email = (payload['email'] as string).toLowerCase();
+    setRegisteredEmail(email);
+
+    await fetch(`${backendLink}/auth/send-verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+      credentials: 'include',
+    });
+
+    setOtpDigits(['', '', '', '', '', '']);
+    setOtpError(null);
     setStep(2);
   };
 
@@ -90,11 +156,80 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
         return;
       }
 
+      setAuthenticated(true);
       router.push('/');
     } catch {
       setLoginError('Nelze se připojit k serveru. Zkontrolujte připojení.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const tryVerifyOtp = async () => {
+    const code = otpDigits.join('');
+    if (code.length !== 6) {
+      setOtpError('Zadejte celý 6místný kód.');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError(null);
+
+    try {
+      const response = await fetch(`${backendLink}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: registeredEmail, code }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 400 || response.status === 401) {
+          setOtpError('Neplatný nebo expirovaný kód. Zkuste to znovu.');
+        } else if (response.status === 429) {
+          setOtpError('Příliš mnoho pokusů. Zkuste to později.');
+        } else {
+          setOtpError('Něco se pokazilo. Zkuste to znovu.');
+        }
+        return;
+      }
+
+      setStep(3);
+    } catch {
+      setOtpError('Nelze se připojit k serveru.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    setResendLoading(true);
+    setResendSuccess(false);
+    setOtpError(null);
+
+    try {
+      const response = await fetch(`${backendLink}/auth/send-verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: registeredEmail }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          setOtpError('Příliš mnoho pokusů. Zkuste to později.');
+        } else {
+          setOtpError('Nepodařilo se odeslat kód.');
+        }
+        return;
+      }
+
+      setOtpDigits(['', '', '', '', '', '']);
+      setResendSuccess(true);
+    } catch {
+      setOtpError('Nelze se připojit k serveru.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -311,6 +446,16 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
             Pro dokončení registrace zadejte kód, který jsme vám právě poslali
             na váš e-mail.
           </p>
+          {otpError && (
+            <div className="w-full text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-4">
+              {otpError}
+            </div>
+          )}
+          {resendSuccess && (
+            <div className="w-full text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mt-4">
+              Nový kód byl odeslán na váš e-mail.
+            </div>
+          )}
           <div className="flex items-center justify-center m-10">
             <div className="flex gap-2 items-center">
               {[0, 1, 2].map((i) => (
@@ -318,7 +463,11 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
                   key={i}
                   className="rounded-lg border-2 border-primary/30 text-2xl md:text-3xl w-8 md:w-12 h-12 md:h-16 text-center focus:border-primary outline-none"
                   maxLength={1}
+                  inputMode="numeric"
+                  value={otpDigits[i]}
                   onChange={(e) => handleOtpChange(e, i)}
+                  onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                  onPaste={handleOtpPaste}
                 />
               ))}
               <span className="text-2xl font-bold text-primary/30">-</span>
@@ -327,21 +476,30 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
                   key={i}
                   className="rounded-lg border-2 border-primary/30 text-2xl md:text-3xl w-8 md:w-12 h-12 md:h-16 text-center focus:border-primary outline-none"
                   maxLength={1}
+                  inputMode="numeric"
+                  value={otpDigits[i]}
                   onChange={(e) => handleOtpChange(e, i)}
+                  onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                  onPaste={handleOtpPaste}
                 />
               ))}
             </div>
           </div>
           <button
-            onClick={() => setStep(3)}
-            className="py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200 cursor-pointer"
+            onClick={tryVerifyOtp}
+            disabled={otpLoading}
+            className="py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Ověřit a pokračovat
+            {otpLoading ? 'Ověřování...' : 'Ověřit a pokračovat'}
           </button>
           <p className="text-center mt-4 text-sm">
             Nedostal jste kód?{' '}
-            <button className="font-bold text-primary hover:underline">
-              Zaslat znovu
+            <button
+              onClick={resendOtp}
+              disabled={resendLoading}
+              className="font-bold text-primary hover:underline disabled:opacity-50"
+            >
+              {resendLoading ? 'Odesílání...' : 'Zaslat znovu'}
             </button>
           </p>
         </>
@@ -358,7 +516,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
             všechny možnosti JakoFakt!
           </p>
           <button
-            onClick={() => (window.location.href = '/dashboard')}
+            onClick={() => router.push('/')}
             className="cursor-pointer py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200"
           >
             Přejít na dashboard
