@@ -2,9 +2,9 @@ import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 
 export class CommentDto {
   @IsMongoId()
-  user: string;
+  user!: string;
 
   @IsString()
   @IsNotEmpty()
-  content: string;
+  content!: string;
 }

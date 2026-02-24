@@ -6,9 +6,9 @@ import { CommentDto } from './comment.dto';
 export class AddCommentDto {
   @ValidateNested()
   @Type(() => CommentDto)
-  comment: CommentDto;
+  comment!: CommentDto;
 
   @IsNotEmpty()
   @IsMongoId()
-  articleId: string;
+  articleId!: string;
 }
