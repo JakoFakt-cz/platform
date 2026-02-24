@@ -15,9 +15,10 @@ export default function Home() {
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
 
   useEffect(() => {
-    RetrieveArticlesFromBackend({ latest: true, limit: 9 }).then((value) => {
+    RetrieveArticlesFromBackend({ latest: true, limit: 9 }).then(async (value) => {
       setArticles(value);
       setTopArticle(value[0]);
+      await new Promise((resolve) => setTimeout(resolve, 200)); // Make sure everything is loaded
       setLoading(false);
     })
   }, []);
@@ -145,7 +146,7 @@ export default function Home() {
               author: topArticle.header.author.displayName,
               authorImage: topArticle.header.author.profilePictureUrl,
               tagline: topArticle.header.title,
-              numberOfComments: topArticle.meta.comments.length,
+              numberOfComments: (topArticle.meta.comments ?? []).length,
               votes: 0, //TODO: add number of views
               id: topArticle._id,
               date: FormatTimeArticle(new Date(topArticle.createdAt)),

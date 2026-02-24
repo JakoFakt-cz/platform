@@ -205,7 +205,7 @@ export default function PostDetail() {
         </div>
 
         <div className="mt-8 space-y-4">
-          <h3 className="text-xl font-bold text-primary px-2">Komentáře ({article.meta.comments.length})</h3>
+          <h3 className="text-xl font-bold text-primary px-2">Komentáře ({(article.meta.comments ?? []).length})</h3>
 
           <div className="bg-white p-4 rounded-2xl shadow-md border border-primary/5 flex gap-4" id="comments">
             <div className="w-full">
@@ -235,7 +235,7 @@ export default function PostDetail() {
           </div>
 
           <div className="space-y-4">
-            {article.meta.comments.toReversed().map((comment, index) => {
+            {(article.meta.comments ?? []).toReversed().map((comment, index) => {
               const createdAtDate = new Date(comment.createdAt);
 
               return (
