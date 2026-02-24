@@ -4,5 +4,5 @@ export class GetArticleDto {
   @IsString()
   @IsNotEmpty()
   @IsMongoId()
-  readonly id: string;
+  readonly id!: string;
 }
