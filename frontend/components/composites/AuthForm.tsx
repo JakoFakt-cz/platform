@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
@@ -26,6 +26,52 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
   const [otpLoading, setOtpLoading] = useState<boolean>(false);
   const [resendLoading, setResendLoading] = useState<boolean>(false);
   const [resendSuccess, setResendSuccess] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
+  const [usernameStatus, setUsernameStatus] = useState<
+    'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+  >('idle');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const usernameRegex = /^[a-z0-9_.]+$/;
+
+  const checkUsername = useCallback(
+    (value: string) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      if (!value || value.length < 2) {
+        setUsernameStatus(value.length > 0 ? 'invalid' : 'idle');
+        return;
+      }
+      if (value.length > 32 || !usernameRegex.test(value)) {
+        setUsernameStatus('invalid');
+        return;
+      }
+
+      setUsernameStatus('checking');
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(
+            `${backendLink}/auth/check-username?username=${encodeURIComponent(value)}`
+          );
+          if (!res.ok) {
+            setUsernameStatus('invalid');
+            return;
+          }
+          const data = await res.json();
+          setUsernameStatus(data.isAvailable ? 'available' : 'taken');
+        } catch {
+          setUsernameStatus('idle');
+        }
+      }, 500);
+    },
+    [backendLink]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const handleOtpChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -254,6 +300,8 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               onClick={() => {
                 setIsRegister(false);
                 setLoginError(null);
+                setUsername('');
+                setUsernameStatus('idle');
               }}
               className={`w-full cursor-pointer rounded-full py-1 transition-colors duration-150 ${!isRegister ? 'bg-primary text-white' : 'bg-transparent text-primary'}`}
             >
@@ -354,12 +402,68 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
                 <label htmlFor="username" className="font-semibold text-sm">
                   Uživatelské jméno
                 </label>
-                <input
-                  id="username"
-                  name="username"
-                  className="bg-white border-primary border rounded-lg py-2 w-full px-3 font-medium outline-none"
-                  placeholder="uzivatelske_jmeno"
-                />
+                <div className="relative">
+                  <input
+                    id="username"
+                    name="username"
+                    className={`bg-white border rounded-lg py-2 w-full px-3 font-medium outline-none ${
+                      usernameStatus === 'available'
+                        ? 'border-green-500 focus:ring-2 ring-green-200'
+                        : usernameStatus === 'taken' ||
+                            usernameStatus === 'invalid'
+                          ? 'border-red-500 focus:ring-2 ring-red-200'
+                          : 'border-primary focus:ring-2 ring-primary/20'
+                    }`}
+                    placeholder="uzivatelske_jmeno"
+                    value={username}
+                    onChange={(e) => {
+                      const val = e.target.value.toLowerCase();
+                      setUsername(val);
+                      checkUsername(val);
+                    }}
+                    autoComplete="username"
+                  />
+                  {usernameStatus === 'checking' && (
+                    <Icon
+                      icon="svg-spinners:ring-resize"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/50"
+                    />
+                  )}
+                  {usernameStatus === 'available' && (
+                    <Icon
+                      icon="material-symbols:check-circle"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"
+                    />
+                  )}
+                  {usernameStatus === 'taken' && (
+                    <Icon
+                      icon="material-symbols:cancel"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"
+                    />
+                  )}
+                  {usernameStatus === 'invalid' && (
+                    <Icon
+                      icon="material-symbols:error"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"
+                    />
+                  )}
+                </div>
+                {usernameStatus === 'taken' && (
+                  <p className="text-red-600 text-xs mt-1">
+                    Toto uživatelské jméno je již obsazené.
+                  </p>
+                )}
+                {usernameStatus === 'invalid' && (
+                  <p className="text-red-600 text-xs mt-1">
+                    Jméno musí mít 2–32 znaků a obsahovat pouze malá písmena,
+                    čísla, tečky a podtržítka.
+                  </p>
+                )}
+                {usernameStatus === 'available' && (
+                  <p className="text-green-600 text-xs mt-1">
+                    Uživatelské jméno je dostupné!
+                  </p>
+                )}
               </div>
               <div className="w-full relative">
                 <label htmlFor="password" className="font-semibold text-sm">
@@ -390,7 +494,8 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               </div>
               <button
                 type="submit"
-                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200"
+                disabled={usernameStatus !== 'available'}
+                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Registrovat se
               </button>
