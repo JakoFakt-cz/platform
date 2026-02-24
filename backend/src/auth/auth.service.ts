@@ -185,7 +185,7 @@ export class AuthService {
       });
     } else if (!user.authProvider.includes(oauthUser.provider)) {
       throw new UnauthorizedException(
-        'Please link your OAuth provider in account settings before logging in with it.',
+        'Please link your OAuth provider in settings settings before logging in with it.',
       );
     }
 
