@@ -24,6 +24,13 @@ export default function DashPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-5">
                         <DashboardCard
+                            href="/dash/new-post"
+                            icon="mdi:pencil"
+                            title="Nový příspěvek"
+                        >
+                            <span>Napište nový, zajímavý příspěvek!</span>
+                        </DashboardCard>
+                        <DashboardCard
                             href="/dash/profile"
                             icon="mdi:user"
                             title="Editace profilu"

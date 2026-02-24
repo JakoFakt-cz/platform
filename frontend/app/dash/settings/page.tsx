@@ -5,6 +5,7 @@ import {Icon} from "@iconify/react";
 import Link from "next/link";
 import SettingsToggle from "@/components/SettingsToggle";
 import {useState} from "react";
+import {BackBtn} from "@/components/BackBtn";
 
 export default function SettingsPage() {
     const [doplnSi, setDoplnSi] = useState(true);
@@ -24,6 +25,7 @@ export default function SettingsPage() {
             </section>
             <section className="w-full bg-transparent relative flex flex-col items-center justify-center -mt-125 md:px-50 px-10 pb-20">
                 <div className="border border-primary shadow-xl rounded-2xl p-5 py-10 bg-secondary px-10 w-full max-w-7xl flex flex-col gap-8">
+                    <BackBtn/>
                     <div className="flex items-center gap-3">
                         <Icon icon="mdi:settings" className="text-5xl" />
                         <div>
