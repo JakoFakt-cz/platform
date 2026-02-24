@@ -28,11 +28,12 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const hasAccessToken = cookieStore.has('jako_access_token');
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 
   return (
     <html lang="en">
       <body className={`${workSans.variable} antialiased scroll-smooth`}>
-        <AuthProvider initialAuth={hasAccessToken}>
+        <AuthProvider initialAuth={hasAccessToken} backendUrl={backendUrl}>
           <Menu />
           {children}
           <ToastContainer />

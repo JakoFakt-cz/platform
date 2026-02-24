@@ -59,6 +59,13 @@ export class AuthController {
     });
   }
 
+  @UseGuards(AuthGuard)
+  @Get('me') //auth/me
+  async getMe(@Req() request: Request) {
+    const user = request.user as { userId: string };
+    return this.authService.getMe(user.userId);
+  }
+
   // EMAIL + PASSWORD AUTHENTICATION
 
   @Throttle({ default: { limit: 20, ttl: 60000 } })

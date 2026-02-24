@@ -8,11 +8,13 @@ import SecondaryButton from '@/components/atoms/SecondaryButton';
 import { Icon } from '@iconify/react';
 import { ValidateSearchInput } from '@/validators/searchvalidator';
 import { redirect } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 const Menu = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [searchValue, setSearchValue] = useState<string>('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { isAuthenticated, user } = useAuth();
 
   const testItems = [
     { label: 'Něco1', href: '/1' },
@@ -73,14 +75,28 @@ const Menu = () => {
                 }}
               />
             </div>
-            <SecondaryButton
-              label={'Přihlásit se'}
-              icon={'material-symbols:person-outline'}
-              href={'/auth'}
-              className={
-                'bg-secondary/85 hover:bg-primary/10 hover:text-primary!'
-              }
-            />
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-primary/30 bg-secondary/85">
+                <Icon
+                  icon="material-symbols:person"
+                  className="text-primary"
+                  width="20"
+                  height="20"
+                />
+                <span className="font-semibold text-sm text-primary">
+                  {user.username}
+                </span>
+              </div>
+            ) : (
+              <SecondaryButton
+                label={'Přihlásit se'}
+                icon={'material-symbols:person-outline'}
+                href={'/auth'}
+                className={
+                  'bg-secondary/85 hover:bg-primary/10 hover:text-primary!'
+                }
+              />
+            )}
           </div>
 
           <button
@@ -102,12 +118,26 @@ const Menu = () => {
             <hr className="border-primary/10 my-2" />
 
             <div className="sm:hidden w-full">
-              <SecondaryButton
-                label={'Přihlásit se'}
-                icon={'material-symbols:person-outline'}
-                className="w-full justify-center"
-                href="/auth"
-              />
+              {isAuthenticated && user ? (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-primary/30">
+                  <Icon
+                    icon="material-symbols:person"
+                    className="text-primary"
+                    width="20"
+                    height="20"
+                  />
+                  <span className="font-semibold text-sm text-primary">
+                    {user.username}
+                  </span>
+                </div>
+              ) : (
+                <SecondaryButton
+                  label={'Přihlásit se'}
+                  icon={'material-symbols:person-outline'}
+                  className="w-full justify-center"
+                  href="/auth"
+                />
+              )}
             </div>
           </div>
         </div>
