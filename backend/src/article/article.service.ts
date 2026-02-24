@@ -145,7 +145,7 @@ export class ArticleService {
   }
 
   async addCommentToArticle(
-    id: string,
+    articleId: string,
     commentDto: CommentDto,
   ): Promise<{ article: Article | null; newCommentId: string }> {
     const comment = new this.commentModel({
@@ -154,7 +154,7 @@ export class ArticleService {
     });
 
     const article = await this.articleModel.findByIdAndUpdate(
-      id,
+      articleId,
       { $push: { 'meta.comments': comment } },
       { new: true },
     );
