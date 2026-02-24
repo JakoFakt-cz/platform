@@ -12,6 +12,12 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
   await app.listen(process.env.PORT ?? 4000);
 }
 void bootstrap();

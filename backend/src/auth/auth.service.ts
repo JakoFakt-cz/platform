@@ -142,7 +142,7 @@ export class AuthService {
 
     if (isCodeValid) {
       await this.OTPModel.deleteMany({ email });
-      await this.UserModel.findOneAndUpdate({ email }, { isEmailVerified: true });
+      await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
     }
@@ -190,6 +190,19 @@ export class AuthService {
     }
 
     return this.generateUserTokens(user._id as Types.ObjectId);
+  }
+
+  async getMe(userId: string) {
+    const user = await this.UserModel.findById(userId)
+      .select('username displayName email emailVerified profilePictureUrl')
+      .lean()
+      .exec();
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
   }
 
   private async generateUserTokens(userId: Types.ObjectId) {

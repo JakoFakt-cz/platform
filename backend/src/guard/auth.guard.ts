@@ -8,7 +8,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = request.cookies?.['jako_access_token'] as string | undefined;
     if (!token) throw new UnauthorizedException('Invalid token');
 
     try {
@@ -21,9 +21,5 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid token');
     }
     return true;
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    return request.headers.authorization?.split(' ')[1];
   }
 }

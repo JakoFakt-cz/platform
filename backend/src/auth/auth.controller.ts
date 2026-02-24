@@ -29,6 +29,43 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
+  private setAuthCookies(
+    response: Response,
+    accessToken: string,
+    refreshToken: string,
+    refreshTokenExpiry: Date,
+  ) {
+    const isProduction = this.configService.get<string>('app.env') === 'production';
+    const cookieDomain = this.configService.get<string>('auth.cookieDomain');
+    const accessTokenExpiration =
+      this.configService.get<number>('auth.accessTokenExpiration') || 1800;
+
+    response.cookie('jako_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      expires: refreshTokenExpiry,
+      path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
+    });
+
+    response.cookie('jako_access_token', accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      expires: new Date(Date.now() + accessTokenExpiration * 1000),
+      path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('me') //auth/me
+  async getMe(@Req() request: Request) {
+    const user = request.user as { userId: string };
+    return this.authService.getMe(user.userId);
+  }
+
   // EMAIL + PASSWORD AUTHENTICATION
 
   @Throttle({ default: { limit: 20, ttl: 60000 } })
@@ -48,17 +85,7 @@ export class AuthController {
       password: signupData.password,
     });
 
-    response.cookie('jako_refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: refreshTokenExpiry,
-      path: '/auth/refresh',
-    });
-
-    return {
-      accessToken,
-    };
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
   @Throttle({ default: { limit: 10, ttl: 900000 } })
@@ -67,17 +94,7 @@ export class AuthController {
     const { accessToken, refreshToken, refreshTokenExpiry } =
       await this.authService.login(loginData);
 
-    response.cookie('jako_refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: refreshTokenExpiry,
-      path: '/auth/refresh',
-    });
-
-    return {
-      accessToken,
-    };
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
   // TOKEN REFRESHING
@@ -91,22 +108,10 @@ export class AuthController {
   ) {
     const existingToken = request.cookies['jako_refresh_token'] as string;
 
-    const { accessToken, refreshToken } = await this.authService.refreshTokens(existingToken);
+    const { accessToken, refreshToken, refreshTokenExpiry } =
+      await this.authService.refreshTokens(existingToken);
 
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 14);
-
-    response.cookie('jako_refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: expiryDate,
-      path: '/auth/refresh',
-    });
-
-    return {
-      accessToken,
-    };
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
   // EMAIL VERIFICATION
@@ -149,19 +154,13 @@ export class AuthController {
       throw new BadRequestException('No user information from Google OAuth');
     }
 
-    const { refreshToken, refreshTokenExpiry } = await this.authService.loginWithOAuth(user);
+    const { accessToken, refreshToken, refreshTokenExpiry } =
+      await this.authService.loginWithOAuth(user);
 
-    response.cookie('jako_refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: refreshTokenExpiry,
-      path: '/auth/refresh',
-    });
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
 
     const redirectUrl =
-      this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
-      'http://localhost:3000/oauth-success';
+      this.configService.get<string>('auth.oauthSuccessRedirectUrl') || 'http://localhost:3000';
     response.redirect(redirectUrl);
   }
 
@@ -182,19 +181,14 @@ export class AuthController {
       throw new BadRequestException('No user information from Facebook OAuth');
     }
 
-    const { refreshToken, refreshTokenExpiry } = await this.authService.loginWithOAuth(user);
+    const { accessToken, refreshToken, refreshTokenExpiry } =
+      await this.authService.loginWithOAuth(user);
 
-    response.cookie('jako_refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: refreshTokenExpiry,
-      path: '/auth/refresh',
-    });
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
 
     const redirectUrl =
       this.configService.get<string>('auth.oauthSuccessRedirectUrl') ||
-      'http://localhost:3000/oauth-success';
+      'http://localhost:3000';
     response.redirect(redirectUrl);
   }
   */

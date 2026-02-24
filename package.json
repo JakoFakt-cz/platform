@@ -8,10 +8,10 @@
   "main": "index.js",
   "devDependencies": {
     "@types/bun": "latest",
-    "turbo": "^2.5.8"
+    "turbo": "^2.8.10"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "bugs": {
     "url": "https://github.com/JakoFakt-cz/platform/issues"
