@@ -76,17 +76,14 @@ const Menu = () => {
               />
             </div>
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-primary/30 bg-secondary/85">
-                <Icon
-                  icon="material-symbols:person"
-                  className="text-primary"
-                  width="20"
-                  height="20"
-                />
-                <span className="font-semibold text-sm text-primary">
-                  {user.username}
-                </span>
-              </div>
+              <SecondaryButton
+                label={user.username}
+                icon={'material-symbols:person'}
+                href={'/dash'}
+                className={
+                  'bg-secondary/85 hover:bg-primary/10 hover:text-primary!'
+                }
+              />
             ) : (
               <SecondaryButton
                 label={'Přihlásit se'}
@@ -119,17 +116,12 @@ const Menu = () => {
 
             <div className="sm:hidden w-full">
               {isAuthenticated && user ? (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-primary/30">
-                  <Icon
-                    icon="material-symbols:person"
-                    className="text-primary"
-                    width="20"
-                    height="20"
-                  />
-                  <span className="font-semibold text-sm text-primary">
-                    {user.username}
-                  </span>
-                </div>
+                <SecondaryButton
+                  label={user.username}
+                  icon={'material-symbols:person'}
+                  className="w-full justify-center"
+                  href="/dash"
+                />
               ) : (
                 <SecondaryButton
                   label={'Přihlásit se'}

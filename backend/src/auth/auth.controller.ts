@@ -114,6 +114,27 @@ export class AuthController {
     this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
+  @Post('logout') //auth/logout
+  async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    const existingToken = request.cookies['jako_refresh_token'] as string;
+    if (existingToken) {
+      await this.authService.logout(existingToken);
+    }
+
+    const isProduction = this.configService.get<string>('app.env') === 'production';
+    const cookieDomain = this.configService.get<string>('auth.cookieDomain');
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax' as const,
+      path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
+    };
+
+    response.clearCookie('jako_access_token', cookieOptions);
+    response.clearCookie('jako_refresh_token', cookieOptions);
+  }
+
   // EMAIL VERIFICATION
 
   @Throttle({ default: { limit: 3, ttl: 3600000 } })

@@ -192,6 +192,11 @@ export class AuthService {
     return this.generateUserTokens(user._id as Types.ObjectId);
   }
 
+  async logout(refreshToken: string) {
+    const lookUpHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    await this.RefreshTokenModel.deleteOne({ token: lookUpHash });
+  }
+
   async getMe(userId: string) {
     const user = await this.UserModel.findById(userId)
       .select('username displayName email emailVerified profilePictureUrl')
