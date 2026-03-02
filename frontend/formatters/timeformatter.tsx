@@ -30,13 +30,6 @@ export function FormatWhenMessage(date: Date): string {
   const months  = Math.floor(days / 30);   // orientačně
   const years   = Math.floor(days / 365);  // orientačně
 
-  console.log("seconds:" + seconds);
-  console.log("minutes:" + minutes);
-  console.log("hours:" + hours);
-  console.log("days:" + days);
-  console.log("months:" + months);
-  console.log("years:" + years);
-
   if (years >= 1) {
     return `před ${years} ${pluralize(years, "rokem", "roky", "lety")}`;
   }
