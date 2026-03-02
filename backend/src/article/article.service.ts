@@ -4,12 +4,14 @@ import { Model, Types } from 'mongoose';
 import { Article } from './schema/article.schema';
 import { Comment } from './schema/comment.schema';
 import { CommentDto } from './dto/comment/comment.dto';
+import { Vote } from './schema/vote.schema';
 
 @Injectable()
 export class ArticleService {
   constructor(
     @InjectModel(Article.name) private articleModel: Model<Article>,
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
+    @InjectModel(Vote.name) private voteModel: Model<Vote>,
   ) {}
 
   async createArticle(title: string, authorId: string, body: string): Promise<Article> {
@@ -132,6 +134,20 @@ export class ArticleService {
             select: 'displayName userName profilePictureUrl',
           },
         },
+        {
+          path: 'meta.comments.votes',
+          populate: {
+            path: 'user',
+            select: 'displayName userName profilePictureUrl',
+          },
+        },
+        {
+          path: 'meta.votes',
+          populate: {
+            path: 'user',
+            select: 'displayName userName profilePictureUrl',
+          },
+        },
       ])
       .lean()
       .exec();
@@ -163,5 +179,76 @@ export class ArticleService {
       article: article,
       newCommentId: comment._id.toString(),
     };
+  }
+
+  async addVoteToArticle(
+    articleId: string,
+    userId: string,
+    positive: boolean,
+  ): Promise<Article | null> {
+    const article = await this.articleModel.findById(articleId);
+    if (!article) return null;
+
+    const existingVote = (article.meta.votes ?? []).find((vote) => vote.user.toString() === userId);
+    if (existingVote != undefined && existingVote.positive == positive) return null;
+
+    const vote = new this.voteModel({
+      user: userId,
+      positive,
+    });
+
+    if (existingVote != undefined) {
+      await this.articleModel.findByIdAndUpdate(
+        articleId,
+        { $pull: { 'meta.votes': { user: userId } } },
+        { new: true },
+      );
+    }
+
+    await this.articleModel.findByIdAndUpdate(
+      articleId,
+      { $push: { 'meta.votes': vote } },
+      { new: true },
+    );
+
+    return this.getArticle(articleId);
+  }
+
+  async addVoteToComment(
+    articleId: string,
+    userId: string,
+    positive: boolean,
+    commentId: string,
+  ): Promise<Article | null> {
+    const article = await this.articleModel.findById(articleId);
+    if (!article) return null;
+    if (article.meta.comments == undefined) return null;
+
+    const comment = article.meta.comments.find(
+      (comment) => (comment as never as { _id: Types.ObjectId })._id.toHexString() === commentId,
+    );
+    const existingVote = comment?.votes?.find((vote) => vote.user.toString() === userId);
+    if (existingVote != undefined && existingVote.positive === positive) return null;
+
+    const vote = new this.voteModel({
+      user: userId,
+      positive,
+    });
+
+    if (existingVote != undefined) {
+      await this.articleModel.findByIdAndUpdate(
+        articleId,
+        { $pull: { 'meta.comments.$[comment].votes': { user: userId } } },
+        { arrayFilters: [{ 'comment._id': commentId }] },
+      );
+    }
+
+    await this.articleModel.findByIdAndUpdate(
+      articleId,
+      { $push: { 'meta.comments.$[comment].votes': vote } },
+      { arrayFilters: [{ 'comment._id': commentId }] },
+    );
+
+    return this.getArticle(articleId);
   }
 }

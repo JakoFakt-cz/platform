@@ -2,6 +2,7 @@
 
 import { CommentModel } from './comment';
 import { UserModel } from './user';
+import { VoteModel } from './vote';
 
 export interface ArticleModel {
   _id: string;
@@ -18,6 +19,7 @@ export interface ArticleModel {
     views: number;
     tags?: string[];
     comments: CommentModel[];
+    votes: VoteModel[];
   };
 }
 

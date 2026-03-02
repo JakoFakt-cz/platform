@@ -1,26 +1,135 @@
 "use client";
 
 import { ArticleModel, RetrieveExactArticleFromBackend } from '@/actions/article';
-import { AddCommentToArticle } from '@/actions/comment';
 import LoaderComponent from '@/components/loader';
 import { scrollToHash } from '@/components/scroll';
 import { FormatTimeArticle, FormatWhenMessage } from '@/formatters/timeformatter';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import { redirect, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import { SendComment, SendArticleVote, SendCommentVote } from './actions';
+import { UserModel } from '@/actions/user';
 
 export default function PostDetail() {
   const params = useSearchParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [article, setArticle] = useState<ArticleModel | null>(null);
-  const [writtenComment, setWrittenComment] = useState<string>('');
+  const [plainComment, setPlainComment] = useState<string>('');
+  const [stopVoting, setStopVoting] = useState<boolean>(false);
+  const [cachedUsers, setCachedUsers] = useState<UserModel[]>([]);
+  const divRef = useRef<HTMLDivElement>(null);
   const idParam = params.get('id');
+  const userId = '69492c68e2b63e716b2dd9d1'; // TODO: replace with real user ID
 
   if (!idParam) {
     redirect('/');
   }
+
+  const VoteToArticle = async (positive: boolean) => {
+    if (stopVoting) return;
+    if (!article) return;
+    try {
+      setStopVoting(true);
+      const updatedArticle = await SendArticleVote(article, userId, positive);
+      setArticle(updatedArticle);
+      setStopVoting(false);
+    } catch (error) {
+      console.error('Failed to send vote:', error);
+    }
+  };
+  const currentArticleVote = article?.meta.votes?.find((vote) => vote.user._id === userId);
+
+  const VoteToComment = async (commentId: string, positive: boolean) => {
+    if (stopVoting) return;
+    if (!article) return;
+    if ((article.meta.comments ?? []).find((comment) => (comment as any)._id === commentId)?.votes?.some((vote) => vote.user._id === userId && vote.positive === positive)) return;
+    try {
+      setStopVoting(true);
+      const updatedArticle = await SendCommentVote(article, commentId, userId, positive);
+      setArticle(updatedArticle);
+      setStopVoting(false);
+    } catch (error) {
+      console.error('Failed to send comment vote:', error);
+    }
+  };
+
+  const Comment = async () => {
+    if (!article) return;
+    await SendComment(idParam, plainComment, setPlainComment);
+    // Po odeslání vyčisti div
+    if (divRef.current) {
+      divRef.current.textContent = '';
+    }
+  };
+
+  // Při odpovědi vlož mention přímo do DOM a aktualizuj plainComment
+  const ReplyToComment = (userId: string) => {
+    const mention = `<@${userId}> `;
+    setPlainComment(prev => mention + prev);
+
+    if (!divRef.current) return;
+
+    // Vlož mention span přímo do DOM na začátek
+    const span = document.createElement('span');
+    span.className = 'mention';
+    span.contentEditable = 'false';
+    span.setAttribute('data-user-id', userId);
+    const user = cachedUsers.find(u => u._id.toString() === userId);
+    span.textContent = `@${user ? user.displayName : userId}`;
+
+    const space = document.createTextNode(' ');
+    divRef.current.prepend(space);
+    divRef.current.prepend(span);
+
+    // Posuň kurzor na konec
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(divRef.current);
+    range.collapse(false);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    divRef.current.focus();
+  };
+
+  const SerializeComment = () => {
+    if (!divRef.current) return;
+    const serialize = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as Element;
+        if (el.classList.contains('mention')) {
+          const id = el.getAttribute('data-user-id');
+          return id ? `<@${id}> ` : '';
+        }
+        return Array.from(node.childNodes).map(serialize).join('');
+      }
+      return '';
+    };
+    setPlainComment(Array.from(divRef.current.childNodes).map(serialize).join(''));
+  };
+
+  const ParseComment = (content: string) => {
+    const parts = content.split(/(<@!?[\s]*[a-fA-F0-9]{24}[\s]*>)/g);
+
+    return (
+      <span>
+        {parts.map((part, i) => {
+          const match = part.match(/^<@!?[\s]*([a-fA-F0-9]{24})[\s]*>$/);
+          if (match) {
+            const user = cachedUsers.find(u => u._id.toString() === match[1]);
+            return (
+              <span key={i} className="mention bg-accent/60 p-1 rounded-lg" contentEditable={false} data-user-id={match[1]}>
+                @{user ? user.displayName : match[1]}
+              </span>
+            );
+          }
+          return <React.Fragment key={i}>{part}</React.Fragment>;
+        })}
+      </span>
+    );
+  };
 
   useEffect(() => {
     const onHashChange = () => scrollToHash();
@@ -35,30 +144,15 @@ export default function PostDetail() {
     scrollToHash();
   }, [article]);
 
-  const SendComment = () => {
-    AddCommentToArticle({ 
-      articleId: idParam, 
-      comment: {
-        userId: '69492bc1e2b63e716b2dd9ca',
-        content: writtenComment,
-      }
-    }).then((request) => {
-      if (request.status === 201) {
-        setWrittenComment('');
-        toast.success('Komentář úspěšně odeslán!');
-        window.location.reload();
-      }
-      else {
-        toast(`${request.status} ${request.statusText}: Stala se chyba při odesílání komentáře.`);
-        console.log(request.message);
-      }
-    }).catch((error) => {
-      console.log(error);
-    });
-  };
-
   useEffect(() => {
     RetrieveExactArticleFromBackend({ id: idParam }).then((article) => {
+      const cachedUsersTemp: UserModel[] = [];
+      cachedUsersTemp.push(article.header.author);
+      for (const comment of article.meta.comments ?? []) {
+        cachedUsersTemp.push(comment.user);
+      }
+
+      setCachedUsers(cachedUsersTemp);
       setArticle(article);
       setLoading(false);
     });
@@ -96,7 +190,7 @@ export default function PostDetail() {
     );
   }
 
-  if (article == null) { // article not found
+  if (article == null) {
     return (
       <main className={'w-full min-h-screen'}>
         <section className={'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'}>
@@ -147,7 +241,7 @@ export default function PostDetail() {
       <section className="max-w-4xl mx-auto px-4 relative z-10 pb-20 -mt-130">
         <div className="bg-white shadow-2xl rounded-2xl overflow-hidden border border-primary/10">
           <div className="bg-accent text-white p-4 px-6 flex justify-between items-center">
-            <span className="font-medium">Kategorie</span>
+            <span className="font-medium">Článek</span>
           </div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -176,12 +270,24 @@ export default function PostDetail() {
 
             <div className="mt-8 pt-6 border-t border-secondary/20 flex items-center gap-4">
               <div className="border border-secondary rounded-full flex px-3 py-1 items-center bg-secondary/5">
-                <button className="hover:scale-120 transition-all hover:cursor-pointer text-primary">
-                  <Icon icon="bx:up-arrow" fontSize={20}/>
+                <button 
+                  className="hover:scale-120 transition-all hover:cursor-pointer text-primary"
+                  onClick={() => {
+                    VoteToArticle(true);
+                  }}
+                >
+                  <Icon icon={currentArticleVote != undefined && currentArticleVote?.positive ? "bxs:up-arrow" : "bx:up-arrow"} fontSize={20} />
                 </button>
-                <span className="px-3 font-bold text-primary text-lg">TODO</span>
-                <button className="hover:scale-120 transition-all hover:cursor-pointer text-primary">
-                  <Icon icon="bx:down-arrow" fontSize={20}/>
+                <span className="px-3 font-bold text-primary text-lg">
+                  {(article.meta.votes ?? []).reduce((acc, vote) => acc + (vote.positive ? 1 : -1), 0)}
+                </span>
+                <button 
+                  className="hover:scale-120 transition-all hover:cursor-pointer text-primary"
+                  onClick={() => {
+                    VoteToArticle(false);
+                  }}
+                >
+                  <Icon icon={currentArticleVote != undefined && !currentArticleVote?.positive ? "bxs:down-arrow" : "bx:down-arrow"} fontSize={20} />
                 </button>
               </div>
 
@@ -209,15 +315,90 @@ export default function PostDetail() {
 
           <div className="bg-white p-4 rounded-2xl shadow-md border border-primary/5 flex gap-4" id="comments">
             <div className="w-full">
-              <textarea
-                className="w-full bg-secondary/10 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all border border-primary resize-none"
-                placeholder="Napište svůj komentář..."
-                rows={4}
-                onInput={(e) => setWrittenComment(e.currentTarget.value)}
-                value={writtenComment}
+              <div
+                ref={divRef}
+                contentEditable
+                className="w-full bg-secondary/10 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all border border-primary min-h-24"
+                data-placeholder="Napište svůj komentář..."
+                suppressContentEditableWarning
+                onInput={() => SerializeComment()}
                 onKeyDownCapture={(e) => {
-                  if (e.key === 'Enter') {
-                    SendComment(); 
+                  const sel = window.getSelection();
+                  if (!sel || !sel.rangeCount) return;
+
+                  if (e.key === 'Backspace') {
+                    e.preventDefault();
+
+                    const range = sel.getRangeAt(0);
+                    if (e.ctrlKey) {
+                      const { startContainer, startOffset } = range;
+                      if (startContainer.nodeType === Node.TEXT_NODE) {
+                        const text = startContainer.textContent ?? '';
+                        const before = text.slice(0, startOffset);
+                        const wordStart = before.search(/\S+\s*$/);
+                        const deleteFrom = wordStart === -1 ? 0 : wordStart;
+                        startContainer.textContent = text.slice(0, deleteFrom) + text.slice(startOffset);
+                        range.setStart(startContainer, deleteFrom);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      }
+                    } else {
+                      const { startContainer, startOffset } = range;
+                      if (startContainer.nodeType === Node.TEXT_NODE && startOffset > 0) {
+                        const text = startContainer.textContent ?? '';
+                        startContainer.textContent = text.slice(0, startOffset - 1) + text.slice(startOffset);
+                        range.setStart(startContainer, startOffset - 1);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      } else {
+                        const prev = startContainer.previousSibling;
+                        if (prev) prev.remove();
+                      }
+                    }
+
+                    SerializeComment();
+                  }
+
+                  if (e.key === 'Delete') {
+                    e.preventDefault();
+                    const range = sel.getRangeAt(0);
+                    const { startContainer, startOffset } = range;
+
+                    if (e.ctrlKey) {
+                      if (startContainer.nodeType === Node.TEXT_NODE) {
+                        const text = startContainer.textContent ?? '';
+                        const after = text.slice(startOffset);
+                        const wordEnd = after.search(/\s\S/);
+                        const deleteCount = wordEnd === -1 ? after.length : wordEnd + 1;
+                        startContainer.textContent = text.slice(0, startOffset) + text.slice(startOffset + deleteCount);
+                        range.setStart(startContainer, startOffset);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      }
+                    } else {
+                      if (startContainer.nodeType === Node.TEXT_NODE) {
+                        const text = startContainer.textContent ?? '';
+                        if (startOffset < text.length) {
+                          startContainer.textContent = text.slice(0, startOffset) + text.slice(startOffset + 1);
+                          range.setStart(startContainer, startOffset);
+                          range.collapse(true);
+                          sel.removeAllRanges();
+                          sel.addRange(range);
+                        }
+                      } else {
+                        const next = (startContainer as Element).childNodes[startOffset];
+                        if (next) next.remove();
+                      }
+                    }
+
+                    SerializeComment();
+                  }
+
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    Comment();
                   }
                 }}
               />
@@ -225,7 +406,7 @@ export default function PostDetail() {
                 <button 
                   className="bg-primary text-white px-6 py-1.5 rounded-full font-medium cursor-pointer hover:bg-primary/90 transition-all"
                   onClickCapture={() => {
-                    SendComment();
+                    Comment();
                   }}
                 >
                   Odeslat
@@ -237,6 +418,7 @@ export default function PostDetail() {
           <div className="space-y-4">
             {(article.meta.comments ?? []).toReversed().map((comment, index) => {
               const createdAtDate = new Date(comment.createdAt);
+              const userCurrentVote = (comment.votes ?? []).find((vote) => vote.user._id === userId);
 
               return (
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-primary/5" key={index} id={(comment as any)._id}>
@@ -247,16 +429,33 @@ export default function PostDetail() {
                   </div>
               
                   <p className="text-gray-700 ml-10">
-                    {comment.content}
+                    {ParseComment(comment.content)}
                   </p>
                 
                   <div className="ml-10 mt-3 flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-2">
-                      <Icon icon="bx:up-arrow" className="cursor-pointer hover:text-primary" />
-                      <span className="font-bold">xyz</span>
-                      <Icon icon="bx:down-arrow" className="cursor-pointer hover:text-primary" />
+                      <button
+                        onClick={() => {
+                          VoteToComment((comment as any)._id, true);
+                        }}
+                      >
+                        <Icon icon={userCurrentVote != undefined && userCurrentVote.positive ? "bxs:up-arrow" : "bx:up-arrow"} className="cursor-pointer hover:text-primary" />
+                      </button>
+                      <span className="font-bold">{(comment.votes ?? []).reduce((acc, vote) => acc + (vote.positive ? 1 : -1), 0)}</span>
+                      <button
+                        onClick={() => {                          
+                          VoteToComment((comment as any)._id, false);
+                        }}
+                      >
+                        <Icon icon={userCurrentVote != undefined && !userCurrentVote.positive ? "bxs:down-arrow" : "bx:down-arrow"} className="cursor-pointer hover:text-primary" />
+                      </button>
                     </div>
-                    <button className="hover:text-primary cursor-pointer font-medium">Odpovědět</button>
+                    <button 
+                      className="hover:text-primary cursor-pointer font-medium"
+                      onClick={() => {
+                        ReplyToComment(comment.user._id);
+                      }}
+                    >Odpovědět</button>
                   </div>
                 </div>  
               );

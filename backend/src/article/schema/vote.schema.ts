@@ -9,7 +9,7 @@ export class Vote {
   user!: Types.ObjectId;
 
   @Prop({ required: true })
-  content!: string;
+  positive!: boolean;
 }
 
 export const VoteSchema = SchemaFactory.createForClass(Vote);

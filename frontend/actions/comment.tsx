@@ -1,11 +1,13 @@
 "use server";
 
 import { UserModel } from "./user";
+import { VoteModel } from "./vote";
 
 export interface CommentModel {
   user: UserModel;
   content: string;
   createdAt: string;
+  votes: VoteModel[];
 }
 
 export interface BackendCommentModel {
