@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import AuthForm from '@/components/composites/AuthForm';
+import { Suspense } from 'react';
 
 export default function AuthPage() {
   const backendLink = process.env.BACKEND_URL;
@@ -29,7 +30,9 @@ export default function AuthPage() {
       </section>
 
       <section className="w-full bg-transparent relative flex flex-col items-center justify-center -mt-125 md:px-100 px-10 pb-20">
-        <AuthForm backendLink={backendLink || ''} />
+        <Suspense>
+          <AuthForm backendLink={backendLink || ''} />
+        </Suspense>
       </section>
     </main>
   );

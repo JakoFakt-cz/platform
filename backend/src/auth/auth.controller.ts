@@ -1,14 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -179,19 +169,24 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    const frontendUrl =
+      this.configService.get<string>('auth.oauthSuccessRedirectUrl') || 'http://localhost:3000';
+
     const user = request.user as OAuthUserDto;
     if (!user) {
-      throw new BadRequestException('No user information from Google OAuth');
+      response.redirect(`${frontendUrl}/auth?error=oauth_no_data`);
+      return;
     }
 
-    const { accessToken, refreshToken, refreshTokenExpiry } =
-      await this.authService.loginWithOAuth(user);
+    try {
+      const { accessToken, refreshToken, refreshTokenExpiry } =
+        await this.authService.loginWithOAuth(user);
 
-    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
-
-    const redirectUrl =
-      this.configService.get<string>('auth.oauthSuccessRedirectUrl') || 'http://localhost:3000';
-    response.redirect(redirectUrl);
+      this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
+      response.redirect(`${frontendUrl}/auth/callback`);
+    } catch {
+      response.redirect(`${frontendUrl}/auth?error=oauth_failed`);
+    }
   }
 
   /* FACEBOOK TEMPORARILY DISABLED

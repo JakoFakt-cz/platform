@@ -3,11 +3,18 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
+
+const oauthErrors: Record<string, string> = {
+  oauth_failed:
+    'Přihlášení přes Google se nezdařilo. Pokud váš účet existuje, nejprve propojte Google v nastavení.',
+  oauth_no_data: 'Google neposkytl potřebné údaje. Zkuste to prosím znovu.',
+};
 
 export default function AuthForm({ backendLink }: { backendLink: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setAuthenticated } = useAuth();
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
@@ -30,6 +37,14 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
     'idle' | 'checking' | 'available' | 'taken' | 'invalid'
   >('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const errorCode = searchParams.get('error');
+    if (errorCode && oauthErrors[errorCode]) {
+      setOauthError(oauthErrors[errorCode]);
+    }
+  }, [searchParams]);
 
   const usernameRegex = /^[a-z0-9_.]+$/;
 
@@ -286,6 +301,11 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <h1 className="font-bold w-full text-center text-4xl">
             {isRegister ? 'Vytvořit účet' : 'Vítejte zpět!'}
           </h1>
+          {oauthError && (
+            <div className="w-full text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-4">
+              {oauthError}
+            </div>
+          )}
           <div className="w-full flex p-0.5 rounded-full border border-primary/30 my-5">
             <button
               type="button"
