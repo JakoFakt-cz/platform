@@ -197,6 +197,14 @@ export class AuthService {
     await this.RefreshTokenModel.deleteOne({ token: lookUpHash });
   }
 
+  async getUserEmail(userId: string): Promise<string> {
+    const user = await this.UserModel.findById(userId).select('email').lean().exec();
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return user.email;
+  }
+
   async getMe(userId: string) {
     const user = await this.UserModel.findById(userId)
       .select('username displayName email emailVerified profilePictureUrl')

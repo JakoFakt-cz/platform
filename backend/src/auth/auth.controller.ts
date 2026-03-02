@@ -14,8 +14,6 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { SendVerifyEmailDto } from './dto/sendVerifyEmail.dto';
-import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import { AuthGuard as AuthPassportGuard } from '@nestjs/passport';
 import { OAuthUserDto } from './dto/oauthUser.dto';
 import { ConfigService } from '@nestjs/config';
@@ -137,16 +135,22 @@ export class AuthController {
 
   // EMAIL VERIFICATION
 
+  @UseGuards(AuthGuard)
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('send-verify-email') //auth/send-verify-email
-  async sendVerifyEmail(@Body() emailData: SendVerifyEmailDto) {
-    await this.authService.generateOTPCode(emailData.email.toLowerCase());
+  async sendVerifyEmail(@Req() request: Request) {
+    const { userId } = request.user as { userId: string };
+    const email = await this.authService.getUserEmail(userId);
+    await this.authService.generateOTPCode(email);
   }
 
+  @UseGuards(AuthGuard)
   @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Post('verify-email') //auth/verify-email
-  async verifyEmail(@Body() verifyData: VerifyEmailDto) {
-    await this.authService.verifyOTPCode(verifyData.email.toLowerCase(), verifyData.code);
+  async verifyEmail(@Req() request: Request, @Body('code') code: string) {
+    const { userId } = request.user as { userId: string };
+    const email = await this.authService.getUserEmail(userId);
+    await this.authService.verifyOTPCode(email, code);
   }
 
   // OAUTH AUTHENTICATION

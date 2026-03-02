@@ -13,7 +13,6 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [registeredEmail, setRegisteredEmail] = useState<string>('');
   const [otpDigits, setOtpDigits] = useState<string[]>([
     '',
     '',
@@ -153,13 +152,8 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
 
     setAuthenticated(true);
 
-    const email = (payload['email'] as string).toLowerCase();
-    setRegisteredEmail(email);
-
     await fetch(`${backendLink}/auth/send-verify-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
       credentials: 'include',
     });
 
@@ -225,7 +219,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       const response = await fetch(`${backendLink}/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: registeredEmail, code }),
+        body: JSON.stringify({ code }),
         credentials: 'include',
       });
 
@@ -256,8 +250,6 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
     try {
       const response = await fetch(`${backendLink}/auth/send-verify-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: registeredEmail }),
         credentials: 'include',
       });
 
