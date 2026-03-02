@@ -58,6 +58,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('me') //auth/me
   async getMe(@Req() request: Request) {
     const user = request.user as { userId: string };
@@ -112,6 +113,7 @@ export class AuthController {
     this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Post('logout') //auth/logout
   async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const existingToken = request.cookies['jako_refresh_token'] as string;
@@ -155,6 +157,7 @@ export class AuthController {
 
   // OAUTH AUTHENTICATION
 
+  @Throttle({ default: { limit: 5, ttl: 900000 } })
   @Post('oauth/toggle-provider') //auth/oauth/toggle-provider
   @UseGuards(AuthGuard)
   async linkOAuthProvider(@Req() request: Request, @Body('provider') provider: string) {
@@ -164,10 +167,12 @@ export class AuthController {
     await this.authService.toggleOAuthProvider(userId, provider);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Get('oauth/google') //auth/oauth/google
   @UseGuards(AuthPassportGuard('google'))
   async googleOAuth() {}
 
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Get('oauth/google/callback') //auth/oauth/google/callback
   @UseGuards(AuthPassportGuard('google'))
   async googleOAuthCallback(
