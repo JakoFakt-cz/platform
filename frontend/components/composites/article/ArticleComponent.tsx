@@ -62,6 +62,8 @@ export default function ArticleComponent({
         <a href={`/article?id=${article.id}`} className="bg-primary text-white px-3 py-1 rounded-full hover:scale-105 hover:cursor-pointer transition-all">
           Číst
         </a>
+        {/*
+        TODO: add reporting
         <button 
           className="flex items-center text-sm gap-1 hover:cursor-pointer hover:text-accent transition-all"
           onClickCapture={(e) => {
@@ -72,6 +74,7 @@ export default function ArticleComponent({
           <Icon icon="ci:flag" className=""/>
           Nahlásit
         </button>
+        */}
       </div>
     </div>
   );
