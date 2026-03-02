@@ -302,10 +302,13 @@ export default function PostDetail() {
                 <span className="font-medium">Sdílet</span>
               </button>
 
+              {/* 
+              TODO: add reporting
               <button className="cursor-pointer ml-auto flex items-center text-sm gap-1 hover:text-accent transition-all text-gray-400">
                 <Icon icon="ci:flag" />
                 Nahlásit
               </button>
+              */}
             </div>
           </div>
         </div>
