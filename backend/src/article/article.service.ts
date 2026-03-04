@@ -27,12 +27,7 @@ export class ArticleService {
       meta: {
         views: 0,
         tags: ['none'],
-        comments: [
-          {
-            content: 'Nesnasim madanrinky',
-            user: new Types.ObjectId('69492bc1e2b63e716b2dd9ca'),
-          },
-        ],
+        comments: [],
       },
     });
     return created.save();
@@ -239,14 +234,14 @@ export class ArticleService {
       await this.articleModel.findByIdAndUpdate(
         articleId,
         { $pull: { 'meta.comments.$[comment].votes': { user: userId } } },
-        { arrayFilters: [{ 'comment._id': commentId }] },
+        { arrayFilters: [{ 'comment._id': { $eq: commentId } }] },
       );
     }
 
     await this.articleModel.findByIdAndUpdate(
       articleId,
       { $push: { 'meta.comments.$[comment].votes': vote } },
-      { arrayFilters: [{ 'comment._id': commentId }] },
+      { arrayFilters: [{ 'comment._id': { $eq: commentId } }] },
     );
 
     return this.getArticle(articleId);
