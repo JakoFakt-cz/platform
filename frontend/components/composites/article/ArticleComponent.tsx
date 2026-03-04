@@ -1,5 +1,4 @@
 import { ArticleModel } from "@/actions/article";
-import { VoteModel } from "@/actions/vote";
 import { FormatWhenMessage } from "@/formatters/timeformatter";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -26,6 +25,7 @@ export default function ArticleComponent({
   events
 }: Props) {
   // articles do not have populated vote which means there's no _id but just vote.user which is the _id unless they have been updated manually
+  // TODO: replace with more adequate solution
   const currentVote = article?.meta.votes?.find((vote) => vote.user._id === userId || vote.user as any as string === userId);
 
   return (
