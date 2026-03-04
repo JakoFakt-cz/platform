@@ -224,7 +224,11 @@ export class ArticleService {
     commentId: string,
   ): Promise<Article | null> {
     // Ensure articleId is treated strictly as an ObjectId and not as a query object
-    if (!Types.ObjectId.isValid(articleId)) {
+    if (
+      !Types.ObjectId.isValid(articleId) ||
+      !Types.ObjectId.isValid(articleId) ||
+      !Types.ObjectId.isValid(userId)
+    ) {
       return null;
     }
     const articleObjectId = new Types.ObjectId(articleId);
