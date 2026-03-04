@@ -8,6 +8,7 @@ export interface CommentModel {
   content: string;
   createdAt: string;
   votes: VoteModel[];
+  _id: string;
 }
 
 export interface BackendCommentModel {
