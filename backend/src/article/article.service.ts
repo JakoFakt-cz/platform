@@ -228,7 +228,13 @@ export class ArticleService {
     positive: boolean,
     commentId: string,
   ): Promise<Article | null> {
-    const article = await this.articleModel.findById(articleId);
+    // Ensure articleId is treated strictly as an ObjectId and not as a query object
+    if (!Types.ObjectId.isValid(articleId)) {
+      return null;
+    }
+    const articleObjectId = new Types.ObjectId(articleId);
+
+    const article = await this.articleModel.findById(articleObjectId);
     if (!article) return null;
     if (article.meta.comments == undefined) return null;
 
@@ -245,14 +251,14 @@ export class ArticleService {
 
     if (existingVote != undefined) {
       await this.articleModel.findByIdAndUpdate(
-        articleId,
+        articleObjectId,
         { $pull: { 'meta.comments.$[comment].votes': { user: userId } } },
         { arrayFilters: [{ 'comment._id': commentId }] },
       );
     }
 
     await this.articleModel.findByIdAndUpdate(
-      articleId,
+      articleObjectId,
       { $push: { 'meta.comments.$[comment].votes': vote } },
       { arrayFilters: [{ 'comment._id': commentId }] },
     );
