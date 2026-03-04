@@ -15,9 +15,10 @@ export default function Dashboard() {
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
 
   useEffect(() => {
-    RetrieveArticlesFromBackend({ latest: true, limit: 9 }).then((value) => {
+    RetrieveArticlesFromBackend({ latest: true, limit: 9 }).then(async (value) => {
       setArticles(value);
       setTopArticle(value[0]);
+      await new Promise((resolve) => setTimeout(resolve, 200)); // Make sure everything is loaded
       setLoading(false);
     });
   }, []);
@@ -158,14 +159,21 @@ export default function Dashboard() {
               author: topArticle.header.author?.displayName ?? 'Neznámý autor',
               authorImage: topArticle.header.author?.profilePictureUrl ?? '',
               tagline: topArticle.header.title,
-              numberOfComments: 0, //TODO: add number of comments
+              numberOfComments: (topArticle.meta.comments ?? []).length,
               votes: 0, //TODO: add number of views
               id: topArticle._id,
               date: FormatTimeArticle(new Date(topArticle.createdAt)),
             }}
+            header={
+              <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-3 -m-5 flex items-center gap-1">
+                <Icon icon="mdi:sparkles" width="24" height="24" />
+                Nejnovější
+              </div>
+            }
           />
         </div>
       </section>
+      {/*
       <section className="w-full flex flex-col items-center justify-center px-4 md:px-30">
         <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 shadow-xl rounded-2xl border border-primary mb-10 overflow-hidden">
           <a
@@ -230,6 +238,7 @@ export default function Dashboard() {
           </a>
         </div>
       </section>
+      */}
       {articles && articles.length > 1 && (
         <section className="w-full flex flex-col items-center justify-center px-5 md:px-30">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-10">
@@ -246,7 +255,7 @@ export default function Dashboard() {
                         authorImage:
                           article.header.author?.profilePictureUrl ?? '',
                         tagline: article.header.title,
-                        numberOfComments: 5,
+                        numberOfComments: article.meta.comments.length,
                         votes: -2,
                         id: article._id,
                         date: FormatTimeArticle(new Date(article.createdAt)),

@@ -1,8 +1,10 @@
 import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 
-export class GetArticleDto {
+export class CommentDto {
+  @IsMongoId()
+  user!: string;
+
   @IsString()
   @IsNotEmpty()
-  @IsMongoId()
-  readonly id!: string;
+  content!: string;
 }

@@ -163,7 +163,7 @@ export default function SearchPage() {
               author: topArticle.header.author?.displayName ?? 'Neznámý autor',
               authorImage: topArticle.header.author?.profilePictureUrl ?? '',
               tagline: topArticle.header.title,
-              numberOfComments: 0, //TODO: add number of comments
+              numberOfComments: (topArticle.meta.comments ?? []).length,
               votes: 0, //TODO: add number of views
               id: topArticle._id,
               date: FormatTimeArticle(new Date(topArticle.createdAt)),
@@ -188,8 +188,8 @@ export default function SearchPage() {
                         authorImage:
                           article.header.author?.profilePictureUrl ?? '',
                         tagline: article.header.title,
-                        numberOfComments: 5,
-                        votes: -2,
+                        numberOfComments: (article.meta.comments ?? []).length,
+                        votes: (article.meta.votes ?? []).reduce((value, vote) => (vote.positive ? 1 : -1) + value, 0),
                         id: article._id,
                         date: FormatTimeArticle(new Date(article.createdAt)),
                       }}

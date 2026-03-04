@@ -20,9 +20,6 @@ function pluralize(
 export function FormatWhenMessage(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  console.log("diff: " + diffMs)
-  console.log(now.toISOString());
-  console.log(date.toISOString());
 
   if (diffMs < 0) return "v budoucnosti";
 
@@ -32,13 +29,6 @@ export function FormatWhenMessage(date: Date): string {
   const days    = Math.floor(hours / 24);
   const months  = Math.floor(days / 30);   // orientačně
   const years   = Math.floor(days / 365);  // orientačně
-
-  console.log("seconds:" + seconds);
-  console.log("minutes:" + minutes);
-  console.log("hours:" + hours);
-  console.log("days:" + days);
-  console.log("months:" + months);
-  console.log("years:" + years);
 
   if (years >= 1) {
     return `před ${years} ${pluralize(years, "rokem", "roky", "lety")}`;

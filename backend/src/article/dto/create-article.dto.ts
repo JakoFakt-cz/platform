@@ -4,14 +4,14 @@ export class CreateArticleDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
-  readonly title: string;
+  readonly title!: string;
 
   @IsString()
   @IsNotEmpty()
-  readonly authorId: string;
+  readonly authorId!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(120)
-  readonly body: string;
+  readonly body!: string;
 }
