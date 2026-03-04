@@ -189,6 +189,11 @@ export class ArticleService {
     userId: string,
     positive: boolean,
   ): Promise<Article | null> {
+    // Ensure articleId is a safe literal value before using it in a query
+    if (typeof articleId !== 'string' || !Types.ObjectId.isValid(articleId)) {
+      return null;
+    }
+
     const article = await this.articleModel.findById(articleId);
     if (!article) return null;
 
