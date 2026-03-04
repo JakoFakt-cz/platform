@@ -183,7 +183,7 @@ export class AuthController {
         await this.authService.loginWithOAuth(user);
 
       this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
-      response.redirect(`${frontendUrl}/auth/callback`);
+      response.redirect(`${frontendUrl}/dash`);
     } catch {
       response.redirect(`${frontendUrl}/auth?error=oauth_failed`);
     }
