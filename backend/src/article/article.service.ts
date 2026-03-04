@@ -164,6 +164,14 @@ export class ArticleService {
     articleId: string,
     commentDto: CommentDto,
   ): Promise<{ article: Article | null; newCommentId: string }> {
+    // Ensure articleId is a safe literal value before using it in a query
+    if (typeof articleId !== 'string' || !Types.ObjectId.isValid(articleId)) {
+      return {
+        article: null,
+        newCommentId: '',
+      };
+    }
+
     const comment = new this.commentModel({
       user: commentDto.user,
       content: commentDto.content,
