@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import Image from 'next/image';
-import Search from "@/components/composites/Search";
+import Search from '@/components/composites/Search';
 import { Icon } from '@iconify/react';
 import LoaderComponent from '@/components/loader';
 import { ArticleModel, RetrieveArticlesFromBackend } from '@/actions/article';
@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import ArticleComponent from '@/components/composites/article/ArticleComponent';
 import { FormatTimeArticle } from '@/formatters/timeformatter';
 
-export default function Home() {
+export default function Dashboard() {
   const [loading, setLoading] = useState<boolean>(false);
   const [articles, setArticles] = useState<ArticleModel[]>();
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
@@ -20,14 +20,18 @@ export default function Home() {
       setTopArticle(value[0]);
       await new Promise((resolve) => setTimeout(resolve, 200)); // Make sure everything is loaded
       setLoading(false);
-    })
+    });
   }, []);
 
   if (loading) {
     return (
       <main className={'w-full'}>
         {/*   HERO SEKCE   */}
-        <section className={'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'}>
+        <section
+          className={
+            'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'
+          }
+        >
           <Image
             src={'/images/background-pattern.png'}
             alt={'Vzor pozadí'}
@@ -53,11 +57,13 @@ export default function Home() {
             Odhalujeme, <span className={'underline'}>jak je to</span>,<br />
             <span className={'text-accent'}>doopravdy</span>
           </h2>
-          <Search/>
+          <Search />
         </section>
         <section className="w-full relative overflow-hidden items-center justify-center px-5 md:px-30 py-16 flex flex-col gap-4">
-          <span className='font-bold text-primary text-shadow-lg'>Načítání článků...</span>
-          <LoaderComponent size="normal" color='#2d4059' />
+          <span className="font-bold text-primary text-shadow-lg">
+            Načítání článků...
+          </span>
+          <LoaderComponent size="normal" color="#2d4059" />
         </section>
       </main>
     );
@@ -67,7 +73,11 @@ export default function Home() {
     return (
       <main className={'w-full'}>
         {/*   HERO SEKCE   */}
-        <section className={'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'}>
+        <section
+          className={
+            'w-full h-120 relative overflow-hidden bg-secondary/50 flex flex-col items-center justify-center'
+          }
+        >
           <Image
             src={'/images/background-pattern.png'}
             alt={'Vzor pozadí'}
@@ -93,10 +103,12 @@ export default function Home() {
             tohle <span className={'underline'}>je</span>,<br />
             <span className={'text-accent'}>dokonalé hero</span>
           </h2>
-          <Search/>
+          <Search />
         </section>
         <section className="w-full relative overflow-hidden items-center justify-center px-5 md:px-30 py-16 flex flex-col gap-4">
-          <span className='font-bold text-primary text-shadow-lg'>Omlouváme se, ale žádný článek jsme nenašli...</span>
+          <span className="font-bold text-primary text-shadow-lg">
+            Omlouváme se, ale žádný článek jsme nenašli...
+          </span>
           <Icon icon="mage:robot-sad" width="48" height="48" />
         </section>
       </main>
@@ -128,12 +140,13 @@ export default function Home() {
 
         <h2
           className={
-            'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
+            'md:text-7xl text-5x text-center text-balance font-bold text-primary text-shadow-lg z-5'
           }
         >
           {/* TODO: Doladit design hlavního textu */}
           {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
-          <span className={'underline'}>Odhalujeme</span>, jak je to,<br />
+          <span className={'underline'}>Odhalujeme</span>, jak je to,
+          <br />
           <span className={'text-accent'}>doopravdy</span>
         </h2>
         <Search />
@@ -143,8 +156,8 @@ export default function Home() {
           <ArticleComponent
             article={{
               description: topArticle.header.headline,
-              author: topArticle.header.author.displayName,
-              authorImage: topArticle.header.author.profilePictureUrl,
+              author: topArticle.header.author?.displayName ?? 'Neznámý autor',
+              authorImage: topArticle.header.author?.profilePictureUrl ?? '',
               tagline: topArticle.header.title,
               numberOfComments: (topArticle.meta.comments ?? []).length,
               votes: 0, //TODO: add number of views
@@ -237,8 +250,10 @@ export default function Home() {
                     <ArticleComponent
                       article={{
                         description: article.header.headline,
-                        author: article.header.author.displayName,
-                        authorImage: article.header.author.profilePictureUrl,
+                        author:
+                          article.header.author?.displayName ?? 'Neznámý autor',
+                        authorImage:
+                          article.header.author?.profilePictureUrl ?? '',
                         tagline: article.header.title,
                         numberOfComments: article.meta.comments.length,
                         votes: -2,

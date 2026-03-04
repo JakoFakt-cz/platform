@@ -7,7 +7,11 @@ import { Model } from 'mongoose';
 export class UserService {
   constructor(@InjectModel(User.name) private model: Model<User>) {}
 
-  async getUserById({ id }: { id: string }): Promise<User | null> {
-    return await this.model.findOne({ _id: { $eq: id } });
+  async getUserById({ id }: { id: string }) {
+    return await this.model
+      .findOne({ _id: { $eq: id } })
+      .select('username displayName profilePictureUrl')
+      .lean()
+      .exec();
   }
 }
