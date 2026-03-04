@@ -170,7 +170,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const frontendUrl =
-      this.configService.get<string>('auth.oauthSuccessRedirectUrl') || 'http://localhost:3000';
+      this.configService.get<string>('auth.frontendUrl') || 'http://localhost:3000';
 
     const user = request.user as OAuthUserDto;
     if (!user) {

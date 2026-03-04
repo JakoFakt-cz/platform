@@ -7,7 +7,7 @@ export default () => ({
     accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION || 30 * 60,
     refreshTokenExpiration: process.env.REFRESH_TOKEN_EXPIRATION || 14 * 24 * 60 * 60,
     hashSaltRounds: process.env.PASSWORD_HASH_SALT_ROUNDS || 12,
-    oauthSuccessRedirectUrl: process.env.OAUTH_SUCCESS_REDIRECT_URL,
+    frontendUrl: process.env.FRONTEND_URL,
     cookieDomain: process.env.COOKIE_DOMAIN || undefined,
     google: {
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
