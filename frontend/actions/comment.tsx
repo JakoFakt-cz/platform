@@ -1,5 +1,6 @@
 "use server";
 
+import { ArticleModel } from "./article";
 import { UserModel } from "./user";
 import { VoteModel } from "./vote";
 
@@ -64,4 +65,38 @@ export async function AddCommentToArticle({
     statusText: res.statusText,
     message: await res.text(),
   };
+}
+
+export async function GetCommentsByAuthor({
+  authorId,
+  limit,
+}: {
+  authorId: string;
+  limit?: number;
+}): Promise<{ article: ArticleModel, comments: CommentModel[] }[]> {
+  let queryParams = '';
+  queryParams = addQueryParam(queryParams, 'limit', limit);
+  queryParams = addQueryParam(queryParams, 'authorId', authorId);
+  const res = await fetch(`${process.env.BACKEND_URL}/articles/comments/author${queryParams}`, {
+    method: 'GET',
+  });
+
+  if (!res.ok) {
+    console.error(queryParams);
+    throw new Error(
+      `Failed to find articles with author ${authorId}. ${await res.text()} ${res.statusText}`
+    );
+  }
+
+  return res.json();
+}
+
+function addQueryParam(
+  input: string,
+  paramName: string,
+  paramValue?: any
+): string {
+  if (!paramValue) return input;
+  const separator = input.includes('?') ? '&' : '?';
+  return input + separator + paramName + '=' + paramValue;
 }

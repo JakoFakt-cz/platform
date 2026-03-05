@@ -57,6 +57,7 @@ export default function PostDetail() {
       setStopVoting(false);
     } catch (error) {
       console.error('Failed to send comment vote:', error);
+      setStopVoting(false);
     }
   };
 
@@ -69,24 +70,23 @@ export default function PostDetail() {
     }
   };
 
-  // Při odpovědi vlož mention přímo do DOM a aktualizuj plainComment
   const ReplyToComment = (userId: string) => {
     const mention = `<@${userId}> `;
     setPlainComment(prev => mention + prev);
 
     if (!divRef.current) return;
 
-    // Vlož mention span přímo do DOM na začátek
     const span = document.createElement('span');
-    span.className = 'mention';
+    span.className = 'mention bg-accent/60 p-1 rounded-lg';
     span.contentEditable = 'false';
     span.setAttribute('data-user-id', userId);
     const user = cachedUsers.find(u => u._id.toString() === userId);
     span.textContent = `@${user ? user.displayName : userId}`;
 
-    const space = document.createTextNode(' ');
-    divRef.current.prepend(space);
-    divRef.current.prepend(span);
+    // Mezera jako samostatný textový uzel - PŘED span, aby kurzor byl správně
+    const spaceAfter = document.createTextNode('\u00A0'); // non-breaking space
+    divRef.current.prepend(spaceAfter); // nejdřív mezera (bude za spanem)
+    divRef.current.prepend(span);       // pak span (půjde před mezeru)
 
     // Posuň kurzor na konec
     const range = document.createRange();
@@ -106,7 +106,7 @@ export default function PostDetail() {
         const el = node as Element;
         if (el.classList.contains('mention')) {
           const id = el.getAttribute('data-user-id');
-          return id ? `<@${id}> ` : '';
+          return id ? `<@${id}>` : '';
         }
         return Array.from(node.childNodes).map(serialize).join('');
       }
@@ -299,7 +299,7 @@ export default function PostDetail() {
               {article.header.headline}
             </h1>
 
-            <div className="text-gray-700 text-lg leading-relaxed space-y-4">
+            <div className="text-gray-700 text-lg leading-relaxed space-y-4 break-all">
               <p>{article.body.content}</p>
             </div>
 

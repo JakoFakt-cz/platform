@@ -8,6 +8,8 @@ import { GetArticleDto } from './dto/get-article.dto';
 import { AddCommentDto } from './dto/comment/add-comment.dto';
 import { AddVoteDto } from './dto/vote/add-vote.dto';
 import { AddCommentVoteDto } from './dto/comment/add-vote-comment.dto';
+import { Comment } from './schema/comment.schema';
+import { GetCommentsByAuthorDto } from './dto/comment/get-comments.dto';
 
 @Controller('articles')
 export class ArticleController {
@@ -29,8 +31,8 @@ export class ArticleController {
 
   @Post('create')
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
-  async createNewArticle(@Body() dto: CreateArticleDto): Promise<void> {
-    await this.service.createArticle(dto.title, dto.authorId, dto.body);
+  async createNewArticle(@Body() dto: CreateArticleDto): Promise<Article | null> {
+    return await this.service.createArticle(dto.title, dto.headline, dto.authorId, dto.content);
   }
 
   @Get('exact')
@@ -65,5 +67,14 @@ export class ArticleController {
       dto.positive,
       dto.commentId,
     );
+  }
+
+  @Get('comments/author')
+  @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
+  async getComments(
+    @Query(new ValidationPipe({ transform: true, forbidNonWhitelisted: true }))
+    dto: GetCommentsByAuthorDto,
+  ): Promise<{ article: Article; comments: Comment[] }[]> {
+    return await this.service.getCommentsByAuthor(dto.authorId, dto.limit);
   }
 }
