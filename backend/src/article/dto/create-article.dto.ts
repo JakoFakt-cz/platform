@@ -8,10 +8,6 @@ export class CreateArticleDto {
 
   @IsString()
   @IsNotEmpty()
-  readonly authorId: string;
-
-  @IsString()
-  @IsNotEmpty()
   @MinLength(120)
   readonly body: string;
 }
