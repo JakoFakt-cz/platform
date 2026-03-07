@@ -73,6 +73,11 @@ export class AuthService {
       email: email.toLowerCase(),
     });
 
+    // Check if user is verified
+    if (!user?.emailVerified) {
+      throw new UnauthorizedException('User not verified');
+    }
+
     const correctPassword = user?.passwordHash || this.dummyPassword;
 
     // Compare the provided password with the stored hashed password
