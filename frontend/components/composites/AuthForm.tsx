@@ -378,7 +378,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Přihlašování...' : 'Přihlásit se'}
               </button>
@@ -507,7 +507,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               <button
                 type="submit"
                 disabled={usernameStatus !== 'available'}
-                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Registrovat se
               </button>
@@ -517,7 +517,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <div className="items-center flex flex-col gap-2 w-full">
             <Link
               href={`${backendLink}/auth/oauth/google`}
-              className="py-2 w-full px-3 flex items-center justify-center gap-3 bg-white text-primary font-semibold rounded-xl border-1 border-primary/30 cursor-pointer hover:bg-primary/5 transition-all"
+              className="py-2 w-full px-3 flex items-center justify-center gap-3 bg-white text-primary font-semibold rounded-xl border border-primary/30 cursor-pointer hover:bg-primary/5 transition-all"
             >
               <img
                 src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw"
@@ -527,6 +527,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               />
               Pokračovat s Google
             </Link>
+            {/* 
             <button className="py-2 w-full px-3 flex items-center justify-center gap-3 bg-white text-primary font-semibold rounded-xl border-1 border-primary/30 cursor-pointer hover:bg-primary/5 transition-all">
               <img
                 src="/images/seznam.png"
@@ -544,6 +545,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               <Icon icon="ic:baseline-facebook" className="text-2xl" />
               Pokračovat s Facebook
             </button>
+            */}
           </div>
         </>
       )}
