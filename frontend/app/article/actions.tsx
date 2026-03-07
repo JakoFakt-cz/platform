@@ -26,7 +26,7 @@ export const SendComment = (idParam: string, writtenComment: string, setWrittenC
 };
 
 export const SendArticleVote = async (article: ArticleModel, userId: string, positive: boolean): Promise<ArticleModel> => {
-  if (article.meta.votes.some((vote) => vote.user._id === userId && vote.positive === positive)) {
+  if ((article.meta.votes ?? []).some((vote) => vote.user._id === userId && vote.positive === positive)) {
     toast('Tento hlas již máte odeslaný!');
     return article;
   }

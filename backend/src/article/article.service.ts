@@ -14,11 +14,17 @@ export class ArticleService {
     @InjectModel(Vote.name) private voteModel: Model<Vote>,
   ) {}
 
-  async createArticle(title: string, authorId: string, body: string): Promise<Article> {
+  // TODO: verify user session
+  async createArticle(
+    title: string,
+    headline: string,
+    authorId: string,
+    body: string,
+  ): Promise<Article> {
     const created = new this.articleModel({
       header: {
         title: title,
-        headline: 'test',
+        headline: headline,
         author: authorId,
       },
       body: {
@@ -26,7 +32,7 @@ export class ArticleService {
       },
       meta: {
         views: 0,
-        tags: ['none'],
+        tags: [],
         comments: [],
       },
     });
@@ -268,5 +274,37 @@ export class ArticleService {
     );
 
     return this.getArticle(articleId);
+  }
+
+  async getCommentsByAuthor(
+    authorId: string,
+    limit: number | undefined,
+  ): Promise<{ article: Article; comments: Comment[] }[]> {
+    const articles = await this.articleModel
+      .find({ 'meta.comments.user': new Types.ObjectId(authorId) })
+      .exec();
+
+    const result: { article: Article; comments: Comment[] }[] = [];
+    let commentCount = 0;
+
+    for (const article of articles) {
+      if (limit !== undefined && commentCount >= limit) break;
+
+      const matchingComments = (article.meta.comments ?? []).filter(
+        (c) => c.user == new Types.ObjectId(authorId),
+      );
+
+      if (matchingComments.length === 0) continue;
+
+      if (limit !== undefined) {
+        const remaining = limit - commentCount;
+        result.push({ article, comments: matchingComments.slice(0, remaining) });
+        commentCount += Math.min(matchingComments.length, remaining);
+      } else {
+        result.push({ article, comments: matchingComments });
+      }
+    }
+
+    return result;
   }
 }

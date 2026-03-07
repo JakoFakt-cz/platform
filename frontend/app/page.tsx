@@ -8,11 +8,14 @@ import { ArticleModel, RetrieveArticlesFromBackend } from '@/actions/article';
 import { useEffect, useState } from 'react';
 import ArticleComponent from '@/components/composites/article/ArticleComponent';
 import { FormatTimeArticle } from '@/formatters/timeformatter';
+import { SendArticleVote } from './article/actions';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState<boolean>(false);
   const [articles, setArticles] = useState<ArticleModel[]>();
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
+  const [stopVoting, setStopVoting] = useState<boolean>(false);
+  const userId = '69492c68e2b63e716b2dd9d1'; // TODO: replace with real user ID
 
   useEffect(() => {
     RetrieveArticlesFromBackend({ latest: true, limit: 9 }).then(async (value) => {
@@ -154,22 +157,31 @@ export default function Dashboard() {
       <section className="w-full relative overflow-hidden flex flex-col items-center justify-center px-5 md:px-30">
         <div className="mb-4 w-full">
           <ArticleComponent
-            article={{
-              description: topArticle.header.headline,
-              author: topArticle.header.author?.displayName ?? 'Neznámý autor',
-              authorImage: topArticle.header.author?.profilePictureUrl ?? '',
-              tagline: topArticle.header.title,
-              numberOfComments: (topArticle.meta.comments ?? []).length,
-              votes: 0, //TODO: add number of views
-              id: topArticle._id,
-              date: FormatTimeArticle(new Date(topArticle.createdAt)),
-            }}
             header={
               <div className="bg-accent rounded-t-2xl text-white font-medium text-xl p-3 px-3 -m-5 flex items-center gap-1">
                 <Icon icon="mdi:sparkles" width="24" height="24" />
                 Nejnovější
               </div>
             }
+            borderType="shadow"
+            article={topArticle}
+            userId={userId}
+            events={{
+              onVote: async (positive) => {
+                if (stopVoting) return;
+                if (!topArticle) return;
+                try {
+                  setStopVoting(true);
+                  const updatedArticle = await SendArticleVote(topArticle, userId, positive);
+                  setTopArticle(updatedArticle);
+                  setArticles((prev) => prev?.map((a) => a._id === updatedArticle._id ? updatedArticle : a));
+                  setStopVoting(false);
+                } catch (error) {
+                  console.error('Failed to send vote:', error);
+                  setStopVoting(false);
+                }
+              }
+            }}
           />
         </div>
       </section>
@@ -248,17 +260,22 @@ export default function Dashboard() {
                 return (
                   <div key={index}>
                     <ArticleComponent
-                      article={{
-                        description: article.header.headline,
-                        author:
-                          article.header.author?.displayName ?? 'Neznámý autor',
-                        authorImage:
-                          article.header.author?.profilePictureUrl ?? '',
-                        tagline: article.header.title,
-                        numberOfComments: article.meta.comments.length,
-                        votes: -2,
-                        id: article._id,
-                        date: FormatTimeArticle(new Date(article.createdAt)),
+                      article={article}
+                      userId={userId}
+                      events={{
+                        onVote: async (positive) => {
+                          if (stopVoting) return;
+                          if (!article) return;
+                          try {
+                            setStopVoting(true);
+                            const updatedArticle = await SendArticleVote(article, userId, positive);
+                            setArticles((prev) => prev?.map((a) => a._id === updatedArticle._id ? updatedArticle : a));
+                            setStopVoting(false);
+                          } catch (error) {
+                            console.error('Failed to send vote:', error);
+                            setStopVoting(false);
+                          }
+                        }
                       }}
                     />
                   </div>
