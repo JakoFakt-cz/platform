@@ -96,7 +96,7 @@ export class ArticleService {
     const res = await this.model.aggregate<Article>(pipeline).exec();
     const populatedArticles = await this.model.populate(res as unknown as Document[], {
       path: 'header.author',
-      select: 'displayName userName profilePictureUrl email',
+      select: 'displayName userName profilePictureUrl',
     });
 
     return populatedArticles;
