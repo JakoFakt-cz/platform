@@ -123,7 +123,7 @@ export class AuthService {
   }
 
   async generateOTPCode(email: string): Promise<void> {
-    const user = await this.UserModel.findOne({ email });
+    const user = await this.UserModel.findOne({ email: { $eq: email } });
     if (!user || user.emailVerified) {
       return; // Do not send OTP to non-existent or already verified users to prevent spam
     }
@@ -134,7 +134,7 @@ export class AuthService {
     const hashedCode = await bcrypt.hash(code.toString(), Number(saltRounds));
 
     await this.OTPModel.deleteMany({
-      email,
+      email: { $eq: email },
     });
 
     await this.OTPModel.create({
