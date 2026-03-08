@@ -92,7 +92,7 @@ export class AuthService {
     }
 
     // Generate JWT token
-    return this.generateUserTokens(user._id as Types.ObjectId);
+    return this.generateUserTokens(user._id);
   }
 
   async refreshTokens(refreshToken: string) {
@@ -159,7 +159,7 @@ export class AuthService {
       await this.OTPModel.deleteMany({ email });
       const user = await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
       if (!user) throw new BadRequestException('User not found');
-      return this.generateUserTokens(user._id as Types.ObjectId);
+      return this.generateUserTokens(user._id);
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
     }
@@ -206,7 +206,7 @@ export class AuthService {
       );
     }
 
-    return this.generateUserTokens(user._id as Types.ObjectId);
+    return this.generateUserTokens(user._id);
   }
 
   async logout(refreshToken: string) {

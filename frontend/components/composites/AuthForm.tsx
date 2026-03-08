@@ -616,7 +616,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <button
             onClick={tryVerifyOtp}
             disabled={otpLoading}
-            className="py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border border-primary transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {otpLoading ? 'Ověřování...' : 'Ověřit a pokračovat'}
           </button>
@@ -645,7 +645,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           </p>
           <button
             onClick={() => router.push('/')}
-            className="cursor-pointer py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200"
+            className="cursor-pointer py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border border-primary transition-all duration-200"
           >
             Přejít na dashboard
             <Icon
