@@ -1,17 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Article } from './schema/article.schema';
+import { Comment } from './schema/comment.schema';
+import { CommentDto } from './dto/comment/comment.dto';
+import { Vote } from './schema/vote.schema';
 
 @Injectable()
 export class ArticleService {
-  constructor(@InjectModel(Article.name) private model: Model<Article>) {}
+  constructor(
+    @InjectModel(Article.name) private articleModel: Model<Article>,
+    @InjectModel(Comment.name) private commentModel: Model<Comment>,
+    @InjectModel(Vote.name) private voteModel: Model<Vote>,
+  ) {}
 
-  async createArticle(title: string, authorId: string, body: string): Promise<Article> {
-    const created = new this.model({
+  // TODO: verify user session
+  async createArticle(
+    title: string,
+    headline: string,
+    authorId: string,
+    body: string,
+  ): Promise<Article> {
+    const created = new this.articleModel({
       header: {
         title: title,
-        headline: 'test',
+        headline: headline,
         author: authorId,
       },
       body: {
@@ -19,7 +32,8 @@ export class ArticleService {
       },
       meta: {
         views: 0,
-        tags: ['none'],
+        tags: [],
+        comments: [],
       },
     });
     return created.save();
@@ -93,8 +107,8 @@ export class ArticleService {
       },
     });
 
-    const res = await this.model.aggregate<Article>(pipeline).exec();
-    const populatedArticles = await this.model.populate(res as unknown as Document[], {
+    const res = await this.articleModel.aggregate<Article>(pipeline).exec();
+    const populatedArticles = await this.articleModel.populate(res as unknown as Document[], {
       path: 'header.author',
       select: 'displayName userName profilePictureUrl',
     });
@@ -107,22 +121,190 @@ export class ArticleService {
       return null;
     }
 
-    const article = await this.model
+    const article = await this.articleModel
       .findOne({ _id: { $eq: id } })
-      .populate({
-        path: 'header.author',
-        select: 'displayName userName profilePictureUrl',
-      })
+      .populate([
+        {
+          path: 'header.author',
+          select: 'displayName userName profilePictureUrl',
+        },
+        {
+          path: 'meta.comments',
+          populate: {
+            path: 'user',
+            select: 'displayName userName profilePictureUrl',
+          },
+        },
+        {
+          path: 'meta.comments.votes',
+          populate: {
+            path: 'user',
+            select: 'displayName userName profilePictureUrl',
+          },
+        },
+        {
+          path: 'meta.votes',
+          populate: {
+            path: 'user',
+            select: 'displayName userName profilePictureUrl',
+          },
+        },
+      ])
       .lean()
       .exec();
 
-    if (article == null) {
+    if (!article) return null;
+
+    await this.articleModel.findByIdAndUpdate(article._id, { $inc: { 'meta.views': 1 } });
+    article.meta.views += 1;
+
+    return article;
+  }
+
+  async addCommentToArticle(
+    articleId: string,
+    commentDto: CommentDto,
+  ): Promise<{ article: Article | null; newCommentId: string }> {
+    // Ensure articleId is a safe literal value before using it in a query
+    if (typeof articleId !== 'string' || !Types.ObjectId.isValid(articleId)) {
+      return {
+        article: null,
+        newCommentId: '',
+      };
+    }
+
+    const comment = new this.commentModel({
+      user: commentDto.user,
+      content: commentDto.content,
+    });
+
+    const article = await this.articleModel.findByIdAndUpdate(
+      articleId,
+      { $push: { 'meta.comments': comment } },
+      { new: true },
+    );
+
+    return {
+      article: article,
+      newCommentId: comment._id.toString(),
+    };
+  }
+
+  async addVoteToArticle(
+    articleId: string,
+    userId: string,
+    positive: boolean,
+  ): Promise<Article | null> {
+    // Ensure articleId is a safe literal value before using it in a query
+    if (typeof articleId !== 'string' || !Types.ObjectId.isValid(articleId)) {
       return null;
     }
 
-    article.meta.views = article.meta.views + 1;
-    await this.model.findByIdAndUpdate(article._id, { $set: article }, { new: true }).exec();
+    const article = await this.articleModel.findById(articleId);
+    if (!article) return null;
 
-    return article;
+    const existingVote = (article.meta.votes ?? []).find((vote) => vote.user.toString() === userId);
+    if (existingVote != undefined && existingVote.positive == positive) return null;
+
+    const vote = new this.voteModel({
+      user: userId,
+      positive,
+    });
+
+    if (existingVote != undefined) {
+      await this.articleModel.findByIdAndUpdate(
+        articleId,
+        { $pull: { 'meta.votes': { user: userId } } },
+        { new: true },
+      );
+    }
+
+    await this.articleModel.findByIdAndUpdate(
+      articleId,
+      { $push: { 'meta.votes': vote } },
+      { new: true },
+    );
+
+    return this.getArticle(articleId);
+  }
+
+  async addVoteToComment(
+    articleId: string,
+    userId: string,
+    positive: boolean,
+    commentId: string,
+  ): Promise<Article | null> {
+    // Ensure articleId is treated strictly as an ObjectId and not as a query object
+    if (
+      !Types.ObjectId.isValid(articleId) ||
+      !Types.ObjectId.isValid(articleId) ||
+      !Types.ObjectId.isValid(userId)
+    ) {
+      return null;
+    }
+    const articleObjectId = new Types.ObjectId(articleId);
+
+    const article = await this.articleModel.findById(articleObjectId);
+    if (!article) return null;
+    if (article.meta.comments == undefined) return null;
+
+    const comment = article.meta.comments.find(
+      (comment) => (comment as never as { _id: Types.ObjectId })._id.toHexString() === commentId,
+    );
+    const existingVote = comment?.votes?.find((vote) => vote.user.toString() === userId);
+    if (existingVote != undefined && existingVote.positive === positive) return null;
+
+    const vote = new this.voteModel({
+      user: userId,
+      positive,
+    });
+
+    if (existingVote != undefined) {
+      await this.articleModel.findByIdAndUpdate(
+        articleObjectId,
+        { $pull: { 'meta.comments.$[comment].votes': { user: userId } } },
+        { arrayFilters: [{ 'comment._id': { $eq: commentId } }] },
+      );
+    }
+
+    await this.articleModel.findByIdAndUpdate(
+      articleObjectId,
+      { $push: { 'meta.comments.$[comment].votes': vote } },
+      { arrayFilters: [{ 'comment._id': { $eq: commentId } }] },
+    );
+
+    return this.getArticle(articleId);
+  }
+
+  async getCommentsByAuthor(
+    authorId: string,
+    limit: number | undefined,
+  ): Promise<{ article: Article; comments: Comment[] }[]> {
+    const articles = await this.articleModel
+      .find({ 'meta.comments.user': new Types.ObjectId(authorId) })
+      .exec();
+
+    const result: { article: Article; comments: Comment[] }[] = [];
+    let commentCount = 0;
+
+    for (const article of articles) {
+      if (limit !== undefined && commentCount >= limit) break;
+
+      const matchingComments = (article.meta.comments ?? []).filter(
+        (c) => c.user == new Types.ObjectId(authorId),
+      );
+
+      if (matchingComments.length === 0) continue;
+
+      if (limit !== undefined) {
+        const remaining = limit - commentCount;
+        result.push({ article, comments: matchingComments.slice(0, remaining) });
+        commentCount += Math.min(matchingComments.length, remaining);
+      } else {
+        result.push({ article, comments: matchingComments });
+      }
+    }
+
+    return result;
   }
 }

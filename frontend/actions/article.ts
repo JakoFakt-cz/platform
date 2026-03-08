@@ -1,6 +1,8 @@
 'use server';
 
+import { CommentModel } from './comment';
 import { UserModel } from './user';
+import { VoteModel } from './vote';
 
 export interface ArticleModel {
   _id: string;
@@ -16,6 +18,8 @@ export interface ArticleModel {
   meta: {
     views: number;
     tags?: string[];
+    comments: CommentModel[];
+    votes: VoteModel[];
   };
 }
 
@@ -23,15 +27,18 @@ export async function RetrieveArticlesFromBackend({
   query,
   limit = 5,
   latest,
+  author,
 }: {
   query?: string;
   limit?: number;
   latest?: boolean;
+  author?: string;
 }): Promise<ArticleModel[]> {
   let queryParams = '';
   queryParams = addQueryParam(queryParams, 'query', query);
   queryParams = addQueryParam(queryParams, 'limit', limit);
   queryParams = addQueryParam(queryParams, 'latest', latest);
+  queryParams = addQueryParam(queryParams, 'authorId', author);
   const res = await fetch(`${process.env.BACKEND_URL}/articles${queryParams}`, {
     method: 'GET',
   });
@@ -73,4 +80,38 @@ function addQueryParam(
   if (!paramValue) return input;
   const separator = input.includes('?') ? '&' : '?';
   return input + separator + paramName + '=' + paramValue;
+}
+
+export async function CreateArticleToBackend({
+  authorId,
+  title,
+  headline,
+  content,
+}: {
+  authorId: string,
+  title: string,
+  headline: string,
+  content: string,
+}): Promise<ArticleModel> {
+  const res = await fetch(
+    `${process.env.BACKEND_URL}/articles/create`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ 
+        authorId: authorId,
+        title: title,
+        headline: headline,
+        content: content,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to create article with title ${title}. ${await res.text()} ${res.statusText}`);
+  }
+
+  return res.json();
 }

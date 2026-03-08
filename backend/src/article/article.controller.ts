@@ -7,6 +7,11 @@ import { Article } from './schema/article.schema';
 import { GetArticlesDto } from './dto/get-articles.dto';
 import { GetArticleDto } from './dto/get-article.dto';
 import { AuthGuard } from '../guard/auth.guard';
+import { AddCommentDto } from './dto/comment/add-comment.dto';
+import { AddVoteDto } from './dto/vote/add-vote.dto';
+import { AddCommentVoteDto } from './dto/comment/add-vote-comment.dto';
+import { Comment } from './schema/comment.schema';
+import { GetCommentsByAuthorDto } from './dto/comment/get-comments.dto';
 
 @Controller('articles')
 export class ArticleController {
@@ -43,5 +48,39 @@ export class ArticleController {
     dto: GetArticleDto,
   ): Promise<Article | null> {
     return this.service.getArticle(dto.id);
+  }
+
+  @Post('comment')
+  @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
+  async addCommentToArticle(
+    @Body() dto: AddCommentDto,
+  ): Promise<{ article: Article | null; newCommentId: string }> {
+    return await this.service.addCommentToArticle(dto.articleId, dto.comment);
+  }
+
+  @Post('vote')
+  @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
+  async voteOnArticle(@Body() dto: AddVoteDto): Promise<Article | null> {
+    return await this.service.addVoteToArticle(dto.articleId, dto.userId, dto.positive);
+  }
+
+  @Post('comment/vote')
+  @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
+  async voteOnComment(@Body() dto: AddCommentVoteDto): Promise<Article | null> {
+    return await this.service.addVoteToComment(
+      dto.articleId,
+      dto.userId,
+      dto.positive,
+      dto.commentId,
+    );
+  }
+
+  @Get('comments/author')
+  @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
+  async getComments(
+    @Query(new ValidationPipe({ transform: true, forbidNonWhitelisted: true }))
+    dto: GetCommentsByAuthorDto,
+  ): Promise<{ article: Article; comments: Comment[] }[]> {
+    return await this.service.getCommentsByAuthor(dto.authorId, dto.limit);
   }
 }

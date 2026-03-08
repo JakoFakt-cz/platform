@@ -4,6 +4,7 @@ export interface UserModel {
   username: string;
   displayName: string;
   profilePictureUrl: string;
+  _id: string;
 }
 
 export async function RetrieveUserByIdFromBackend({ id }: { id: string }) {

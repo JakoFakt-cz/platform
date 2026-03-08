@@ -8,13 +8,13 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.discordapp.com',
       },
       {
-        protocol: 'https',
-        hostname: 'i.ibb.co',
+        protocol: "https",
+        hostname: "i.ibb.co",
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-      },
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      }
     ],
   },
 };

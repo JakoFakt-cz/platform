@@ -8,10 +8,11 @@ import { ArticleModel, RetrieveArticlesFromBackend } from '@/actions/article';
 import { useEffect, useState } from 'react';
 import LoaderComponent from '@/components/loader';
 import { FormatTimeArticle } from '@/formatters/timeformatter';
+import { SendArticleVote } from '../article/actions';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
-
+  const userId = '69492c68e2b63e716b2dd9d1'; // TODO: replace with real user ID
   const queryParam = searchParams.get('query');
 
   if (!queryParam) {
@@ -21,6 +22,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [articles, setArticles] = useState<ArticleModel[]>();
   const [topArticle, setTopArticle] = useState<ArticleModel | null>(null);
+  const [stopVoting, setStopVoting] = useState<boolean>(false);
 
   useEffect(() => {
     RetrieveArticlesFromBackend({ query: queryParam }).then((value) => {
@@ -158,15 +160,23 @@ export default function SearchPage() {
               </div>
             }
             borderType="shadow"
-            article={{
-              description: topArticle.header.headline,
-              author: topArticle.header.author?.displayName ?? 'Neznámý autor',
-              authorImage: topArticle.header.author?.profilePictureUrl ?? '',
-              tagline: topArticle.header.title,
-              numberOfComments: 0, //TODO: add number of comments
-              votes: 0, //TODO: add number of views
-              id: topArticle._id,
-              date: FormatTimeArticle(new Date(topArticle.createdAt)),
+            article={topArticle}
+            userId={userId}
+            events={{
+              onVote: async (positive) => {
+                if (stopVoting) return;
+                if (!topArticle) return;
+                try {
+                  setStopVoting(true);
+                  const updatedArticle = await SendArticleVote(topArticle, userId, positive);
+                  setTopArticle(updatedArticle);
+                  setArticles((prev) => prev?.map((a) => a._id === updatedArticle._id ? updatedArticle : a));
+                  setStopVoting(false);
+                } catch (error) {
+                  console.error('Failed to send vote:', error);
+                  setStopVoting(false);
+                }
+              }
             }}
           />
         </div>
@@ -178,20 +188,27 @@ export default function SearchPage() {
             {articles
               ?.filter((article) => article._id != topArticle._id)
               .map((article, index) => {
+                console.log(article.meta.votes.find((vote) => vote.user._id === userId));
+
                 return (
                   <div key={index}>
                     <ArticleComponent
-                      article={{
-                        description: article.header.headline,
-                        author:
-                          article.header.author?.displayName ?? 'Neznámý autor',
-                        authorImage:
-                          article.header.author?.profilePictureUrl ?? '',
-                        tagline: article.header.title,
-                        numberOfComments: 5,
-                        votes: -2,
-                        id: article._id,
-                        date: FormatTimeArticle(new Date(article.createdAt)),
+                      article={article}
+                      userId={userId}
+                      events={{
+                        onVote: async (positive) => {
+                          if (stopVoting) return;
+                          if (!article) return;
+                          try {
+                            setStopVoting(true);
+                            const updatedArticle = await SendArticleVote(article, userId, positive);
+                            setArticles((prev) => prev?.map((a) => a._id === updatedArticle._id ? updatedArticle : a));
+                            setStopVoting(false);
+                          } catch (error) {
+                            console.error('Failed to send vote:', error);
+                            setStopVoting(false);
+                          }
+                        }
                       }}
                     />
                   </div>
