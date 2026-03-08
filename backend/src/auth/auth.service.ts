@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   ServiceUnavailableException,
   UnauthorizedException,
@@ -73,17 +74,21 @@ export class AuthService {
       email: email.toLowerCase(),
     });
 
-    // Check if user is verified
-    if (!user?.emailVerified) {
-      throw new UnauthorizedException('User not verified');
-    }
-
     const correctPassword = user?.passwordHash || this.dummyPassword;
 
     // Compare the provided password with the stored hashed password
     const passwordMatch = await bcrypt.compare(password, correctPassword);
     if (!user || !passwordMatch) {
       throw new UnauthorizedException('Wrong credentials');
+    }
+
+    // Check if user is verified
+    if (!user.emailVerified) {
+      await this.generateOTPCode(user.email);
+      throw new ForbiddenException({
+        error: 'unverified_account',
+        email: user.email,
+      });
     }
 
     // Generate JWT token
@@ -118,6 +123,11 @@ export class AuthService {
   }
 
   async generateOTPCode(email: string): Promise<void> {
+    const user = await this.UserModel.findOne({ email });
+    if (!user || user.emailVerified) {
+      return; // Do not send OTP to non-existent or already verified users to prevent spam
+    }
+
     const code = crypto.randomInt(100000, 999999);
 
     const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
@@ -135,7 +145,7 @@ export class AuthService {
     await this.mailService.sendVerifyEmail(email, code.toString());
   }
 
-  async verifyOTPCode(email: string, code: string): Promise<void> {
+  async verifyOTPCode(email: string, code: string) {
     const emailOTP = await this.OTPModel.findOne({
       email,
     });
@@ -147,7 +157,9 @@ export class AuthService {
 
     if (isCodeValid) {
       await this.OTPModel.deleteMany({ email });
-      await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
+      const user = await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
+      if (!user) throw new BadRequestException('User not found');
+      return this.generateUserTokens(user._id as Types.ObjectId);
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
     }

@@ -66,15 +66,9 @@ export class AuthController {
 
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('signup') //auth/signup
-  async signUp(@Body() signupData: SignupDto, @Res({ passthrough: true }) response: Response) {
+  async signUp(@Body() signupData: SignupDto) {
     await this.authService.signup(signupData);
-
-    const { accessToken, refreshToken, refreshTokenExpiry } = await this.authService.login({
-      email: signupData.email,
-      password: signupData.password,
-    });
-
-    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
+    await this.authService.generateOTPCode(signupData.email);
   }
 
   @Throttle({ default: { limit: 10, ttl: 900000 } })
@@ -125,24 +119,26 @@ export class AuthController {
     response.clearCookie('jako_refresh_token', cookieOptions);
   }
 
-  // EMAIL VERIFICATION
-
-  @UseGuards(AuthGuard)
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('send-verify-email') //auth/send-verify-email
-  async sendVerifyEmail(@Req() request: Request) {
-    const { userId } = request.user as { userId: string };
-    const email = await this.authService.getUserEmail(userId);
-    await this.authService.generateOTPCode(email);
+  async sendVerifyEmail(@Body('email') email: string) {
+    if (email) {
+      await this.authService.generateOTPCode(email);
+    }
   }
 
-  @UseGuards(AuthGuard)
   @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Post('verify-email') //auth/verify-email
-  async verifyEmail(@Req() request: Request, @Body('code') code: string) {
-    const { userId } = request.user as { userId: string };
-    const email = await this.authService.getUserEmail(userId);
-    await this.authService.verifyOTPCode(email, code);
+  async verifyEmail(
+    @Body('email') email: string,
+    @Body('code') code: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { accessToken, refreshToken, refreshTokenExpiry } = await this.authService.verifyOTPCode(
+      email,
+      code,
+    );
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
   // OAUTH AUTHENTICATION

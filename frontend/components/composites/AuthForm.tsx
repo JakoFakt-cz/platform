@@ -19,6 +19,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [otpDigits, setOtpDigits] = useState<string[]>([
     '',
@@ -165,13 +166,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       return;
     }
 
-    setAuthenticated(true);
-
-    await fetch(`${backendLink}/auth/send-verify-email`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-
+    setUnverifiedEmail(payload['email'] as string);
     setOtpDigits(['', '', '', '', '', '']);
     setOtpError(null);
     setStep(2);
@@ -203,6 +198,17 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       if (!response.ok) {
         if (response.status === 401) {
           setLoginError('Nesprávný e-mail nebo heslo.');
+        } else if (response.status === 403) {
+          const data = await response.json();
+          if (data.error === 'unverified_account') {
+            setUnverifiedEmail(email);
+            setOtpDigits(['', '', '', '', '', '']);
+            setOtpError(null);
+            setStep(2);
+            return;
+          } else {
+            setLoginError('Přístup odepřen.');
+          }
         } else if (response.status === 429) {
           setLoginError('Příliš mnoho pokusů. Zkuste to později.');
         } else {
@@ -234,7 +240,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       const response = await fetch(`${backendLink}/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ email: unverifiedEmail, code }),
         credentials: 'include',
       });
 
@@ -249,6 +255,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
         return;
       }
 
+      setAuthenticated(true);
       setStep(3);
     } catch {
       setOtpError('Nelze se připojit k serveru.');
@@ -265,6 +272,8 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
     try {
       const response = await fetch(`${backendLink}/auth/send-verify-email`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: unverifiedEmail }),
         credentials: 'include',
       });
 
