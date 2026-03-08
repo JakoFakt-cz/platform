@@ -147,7 +147,7 @@ export class AuthService {
 
   async verifyOTPCode(email: string, code: string) {
     const emailOTP = await this.OTPModel.findOne({
-      email,
+      email: { $eq: email },
     });
 
     if (!emailOTP) {
@@ -156,8 +156,11 @@ export class AuthService {
     const isCodeValid = await bcrypt.compare(code.toString(), emailOTP.code);
 
     if (isCodeValid) {
-      await this.OTPModel.deleteMany({ email });
-      const user = await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
+      await this.OTPModel.deleteMany({ email: { $eq: email } });
+      const user = await this.UserModel.findOneAndUpdate(
+        { email: { $eq: email } },
+        { emailVerified: true },
+      );
       if (!user) throw new BadRequestException('User not found');
       return this.generateUserTokens(user._id);
     } else {
