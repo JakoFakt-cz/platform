@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Post, Query, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Request } from 'express';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { Throttle } from '@nestjs/throttler';
 import { Article } from './schema/article.schema';
 import { GetArticlesDto } from './dto/get-articles.dto';
 import { GetArticleDto } from './dto/get-article.dto';
+import { AuthGuard } from '../guard/auth.guard';
 import { AddCommentDto } from './dto/comment/add-comment.dto';
 import { AddVoteDto } from './dto/vote/add-vote.dto';
 import { AddCommentVoteDto } from './dto/comment/add-vote-comment.dto';
@@ -30,9 +32,13 @@ export class ArticleController {
   }
 
   @Post('create')
+  @UseGuards(AuthGuard)
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
-  async createNewArticle(@Body() dto: CreateArticleDto): Promise<Article | null> {
-    return await this.service.createArticle(dto.title, dto.headline, dto.authorId, dto.content);
+  async createNewArticle(
+    @Req() req: Request & { user: { userId: string } },
+    @Body() dto: CreateArticleDto,
+  ): Promise<void> {
+    await this.service.createArticle(dto.title, req.user.userId, dto.body);
   }
 
   @Get('exact')

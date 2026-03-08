@@ -1,21 +1,9 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { SendVerifyEmailDto } from './dto/sendVerifyEmail.dto';
-import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import { AuthGuard as AuthPassportGuard } from '@nestjs/passport';
 import { OAuthUserDto } from './dto/oauthUser.dto';
 import { ConfigService } from '@nestjs/config';
@@ -60,6 +48,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('me') //auth/me
   async getMe(@Req() request: Request) {
     const user = request.user as { userId: string };
@@ -77,15 +66,9 @@ export class AuthController {
 
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('signup') //auth/signup
-  async signUp(@Body() signupData: SignupDto, @Res({ passthrough: true }) response: Response) {
+  async signUp(@Body() signupData: SignupDto) {
     await this.authService.signup(signupData);
-
-    const { accessToken, refreshToken, refreshTokenExpiry } = await this.authService.login({
-      email: signupData.email,
-      password: signupData.password,
-    });
-
-    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
+    await this.authService.generateOTPCode(signupData.email);
   }
 
   @Throttle({ default: { limit: 10, ttl: 900000 } })
@@ -114,22 +97,53 @@ export class AuthController {
     this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
-  // EMAIL VERIFICATION
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
+  @Post('logout') //auth/logout
+  async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    const existingToken = request.cookies['jako_refresh_token'] as string;
+    if (existingToken) {
+      await this.authService.logout(existingToken);
+    }
+
+    const isProduction = this.configService.get<string>('app.env') === 'production';
+    const cookieDomain = this.configService.get<string>('auth.cookieDomain');
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax' as const,
+      path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
+    };
+
+    response.clearCookie('jako_access_token', cookieOptions);
+    response.clearCookie('jako_refresh_token', cookieOptions);
+  }
 
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @Post('send-verify-email') //auth/send-verify-email
-  async sendVerifyEmail(@Body() emailData: SendVerifyEmailDto) {
-    await this.authService.generateOTPCode(emailData.email.toLowerCase());
+  async sendVerifyEmail(@Body('email') email: string) {
+    if (email) {
+      await this.authService.generateOTPCode(email);
+    }
   }
 
   @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Post('verify-email') //auth/verify-email
-  async verifyEmail(@Body() verifyData: VerifyEmailDto) {
-    await this.authService.verifyOTPCode(verifyData.email.toLowerCase(), verifyData.code);
+  async verifyEmail(
+    @Body('email') email: string,
+    @Body('code') code: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { accessToken, refreshToken, refreshTokenExpiry } = await this.authService.verifyOTPCode(
+      email,
+      code,
+    );
+    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
   }
 
   // OAUTH AUTHENTICATION
 
+  @Throttle({ default: { limit: 5, ttl: 900000 } })
   @Post('oauth/toggle-provider') //auth/oauth/toggle-provider
   @UseGuards(AuthGuard)
   async linkOAuthProvider(@Req() request: Request, @Body('provider') provider: string) {
@@ -139,29 +153,36 @@ export class AuthController {
     await this.authService.toggleOAuthProvider(userId, provider);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Get('oauth/google') //auth/oauth/google
   @UseGuards(AuthPassportGuard('google'))
   async googleOAuth() {}
 
+  @Throttle({ default: { limit: 10, ttl: 900000 } })
   @Get('oauth/google/callback') //auth/oauth/google/callback
   @UseGuards(AuthPassportGuard('google'))
   async googleOAuthCallback(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    const frontendUrl =
+      this.configService.get<string>('auth.frontendUrl') || 'http://localhost:3000';
+
     const user = request.user as OAuthUserDto;
     if (!user) {
-      throw new BadRequestException('No user information from Google OAuth');
+      response.redirect(`${frontendUrl}/auth?error=oauth_no_data`);
+      return;
     }
 
-    const { accessToken, refreshToken, refreshTokenExpiry } =
-      await this.authService.loginWithOAuth(user);
+    try {
+      const { accessToken, refreshToken, refreshTokenExpiry } =
+        await this.authService.loginWithOAuth(user);
 
-    this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
-
-    const redirectUrl =
-      this.configService.get<string>('auth.oauthSuccessRedirectUrl') || 'http://localhost:3000';
-    response.redirect(redirectUrl);
+      this.setAuthCookies(response, accessToken, refreshToken, refreshTokenExpiry);
+      response.redirect(`${frontendUrl}/dash`);
+    } catch {
+      response.redirect(`${frontendUrl}/auth?error=oauth_failed`);
+    }
   }
 
   /* FACEBOOK TEMPORARILY DISABLED

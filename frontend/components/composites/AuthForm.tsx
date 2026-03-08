@@ -3,17 +3,24 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
+
+const oauthErrors: Record<string, string> = {
+  oauth_failed:
+    'Přihlášení přes Google se nezdařilo. Pokud váš účet existuje, nejprve propojte Google v nastavení.',
+  oauth_no_data: 'Google neposkytl potřebné údaje. Zkuste to prosím znovu.',
+};
 
 export default function AuthForm({ backendLink }: { backendLink: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setAuthenticated } = useAuth();
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [registeredEmail, setRegisteredEmail] = useState<string>('');
   const [otpDigits, setOtpDigits] = useState<string[]>([
     '',
     '',
@@ -31,6 +38,14 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
     'idle' | 'checking' | 'available' | 'taken' | 'invalid'
   >('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const errorCode = searchParams.get('error');
+    if (errorCode && oauthErrors[errorCode]) {
+      setOauthError(oauthErrors[errorCode]);
+    }
+  }, [searchParams]);
 
   const usernameRegex = /^[a-z0-9_.]+$/;
 
@@ -151,18 +166,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       return;
     }
 
-    setAuthenticated(true);
-
-    const email = (payload['email'] as string).toLowerCase();
-    setRegisteredEmail(email);
-
-    await fetch(`${backendLink}/auth/send-verify-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-      credentials: 'include',
-    });
-
+    setUnverifiedEmail(payload['email'] as string);
     setOtpDigits(['', '', '', '', '', '']);
     setOtpError(null);
     setStep(2);
@@ -194,6 +198,17 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       if (!response.ok) {
         if (response.status === 401) {
           setLoginError('Nesprávný e-mail nebo heslo.');
+        } else if (response.status === 403) {
+          const data = await response.json();
+          if (data.error === 'unverified_account') {
+            setUnverifiedEmail(email);
+            setOtpDigits(['', '', '', '', '', '']);
+            setOtpError(null);
+            setStep(2);
+            return;
+          } else {
+            setLoginError('Přístup odepřen.');
+          }
         } else if (response.status === 429) {
           setLoginError('Příliš mnoho pokusů. Zkuste to později.');
         } else {
@@ -225,7 +240,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       const response = await fetch(`${backendLink}/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: registeredEmail, code }),
+        body: JSON.stringify({ email: unverifiedEmail, code }),
         credentials: 'include',
       });
 
@@ -240,6 +255,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
         return;
       }
 
+      setAuthenticated(true);
       setStep(3);
     } catch {
       setOtpError('Nelze se připojit k serveru.');
@@ -257,7 +273,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
       const response = await fetch(`${backendLink}/auth/send-verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: registeredEmail }),
+        body: JSON.stringify({ email: unverifiedEmail }),
         credentials: 'include',
       });
 
@@ -294,6 +310,11 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <h1 className="font-bold w-full text-center text-4xl">
             {isRegister ? 'Vytvořit účet' : 'Vítejte zpět!'}
           </h1>
+          {oauthError && (
+            <div className="w-full text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-4">
+              {oauthError}
+            </div>
+          )}
           <div className="w-full flex p-0.5 rounded-full border border-primary/30 my-5">
             <button
               type="button"
@@ -366,7 +387,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Přihlašování...' : 'Přihlásit se'}
               </button>
@@ -495,7 +516,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               <button
                 type="submit"
                 disabled={usernameStatus !== 'available'}
-                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border-1 border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2.5 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg border border-primary/30 cursor-pointer hover:bg-white hover:text-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Registrovat se
               </button>
@@ -505,7 +526,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <div className="items-center flex flex-col gap-2 w-full">
             <Link
               href={`${backendLink}/auth/oauth/google`}
-              className="py-2 w-full px-3 flex items-center justify-center gap-3 bg-white text-primary font-semibold rounded-xl border-1 border-primary/30 cursor-pointer hover:bg-primary/5 transition-all"
+              className="py-2 w-full px-3 flex items-center justify-center gap-3 bg-white text-primary font-semibold rounded-xl border border-primary/30 cursor-pointer hover:bg-primary/5 transition-all"
             >
               <img
                 src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw"
@@ -515,6 +536,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               />
               Pokračovat s Google
             </Link>
+            {/* 
             <button className="py-2 w-full px-3 flex items-center justify-center gap-3 bg-white text-primary font-semibold rounded-xl border-1 border-primary/30 cursor-pointer hover:bg-primary/5 transition-all">
               <img
                 src="/images/seznam.png"
@@ -532,6 +554,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
               <Icon icon="ic:baseline-facebook" className="text-2xl" />
               Pokračovat s Facebook
             </button>
+            */}
           </div>
         </>
       )}
@@ -593,7 +616,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           <button
             onClick={tryVerifyOtp}
             disabled={otpLoading}
-            className="py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border border-primary transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {otpLoading ? 'Ověřování...' : 'Ověřit a pokračovat'}
           </button>
@@ -622,7 +645,7 @@ export default function AuthForm({ backendLink }: { backendLink: string }) {
           </p>
           <button
             onClick={() => router.push('/')}
-            className="cursor-pointer py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border-1 border-primary transition-all duration-200"
+            className="cursor-pointer py-3 w-full px-3 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-lg hover:bg-white hover:text-primary border border-primary transition-all duration-200"
           >
             Přejít na dashboard
             <Icon

@@ -1,9 +1,16 @@
+'use client';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
-import AuthForm from '@/components/composites/AuthForm';
-import { Suspense } from 'react';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { redirect } from 'next/navigation';
 
-export default function AuthPage() {
-  const backendLink = process.env.BACKEND_URL;
+const LogoutPage = () => {
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    logout();
+    redirect('/');
+  }, []);
 
   return (
     <main className={'w-full min-h-screen relative'}>
@@ -28,12 +35,15 @@ export default function AuthPage() {
           }
         />
       </section>
-
-      <section className="w-full bg-transparent relative flex flex-col items-center justify-center -mt-125 md:px-100 px-10 pb-20">
-        <Suspense>
-          <AuthForm backendLink={backendLink || ''} />
-        </Suspense>
+      <section className="w-full bg-transparent relative flex flex-col items-center justify-center -mt-125 md:px-50 px-10 pb-20">
+        <div className="border border-primary shadow-xl rounded-2xl p-5 py-10 bg-secondary px-10 w-full max-w-7xl flex flex-col gap-8">
+          <h2 className="text-2xl font-bold text-center">
+            Probíhá odhlášení...
+          </h2>
+        </div>
       </section>
     </main>
   );
-}
+};
+
+export default LogoutPage;

@@ -11,10 +11,6 @@ export class CreateArticleDto {
   @MinLength(6)
   readonly headline!: string;
 
-  @IsNotEmpty()
-  @IsMongoId()
-  readonly authorId!: string;
-
   @IsString()
   @IsNotEmpty()
   @MinLength(120)
