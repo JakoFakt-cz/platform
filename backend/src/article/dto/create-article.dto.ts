@@ -1,4 +1,4 @@
-import { ArrayMinSize, IsArray, IsMongoId, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ArrayMinSize, IsArray, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateArticleDto {
   @IsString()
