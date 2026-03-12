@@ -5,6 +5,7 @@ import { Article } from './schema/article.schema';
 import { Comment } from './schema/comment.schema';
 import { CommentDto } from './dto/comment/comment.dto';
 import { Vote } from './schema/vote.schema';
+import { Source } from './schema/source.schema';
 
 @Injectable()
 export class ArticleService {
@@ -12,6 +13,7 @@ export class ArticleService {
     @InjectModel(Article.name) private articleModel: Model<Article>,
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
     @InjectModel(Vote.name) private voteModel: Model<Vote>,
+    @InjectModel(Source.name) private sourceModel: Model<Source>,
   ) {}
 
   // TODO: verify user session
@@ -20,6 +22,7 @@ export class ArticleService {
     headline: string,
     authorId: string,
     body: string,
+    plainSources: string[],
   ): Promise<Article> {
     const created = new this.articleModel({
       header: {
@@ -29,6 +32,7 @@ export class ArticleService {
       },
       body: {
         content: body,
+        sources: plainSources.map((value) => new this.sourceModel({ link: value })),
       },
       meta: {
         views: 0,

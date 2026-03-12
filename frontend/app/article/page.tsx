@@ -303,7 +303,19 @@ export default function PostDetail() {
               <p>{article.body.content}</p>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-secondary/20 flex items-center gap-4">
+            <div className='text-blue/400 leading-normal break-all mt-8'>
+              <h3 className='text-primary text-xl font-bold'>Zdroje</h3>
+              <div className='flex flex-col gap-2'>
+                {(article.body.sources ?? []).map((source, index) => {
+
+                  return (
+                    <a className='text-accent hover:text-blue-400 transition-all duration-300' href={source.link} key={index}>{source.link}</a>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-secondary/20 flex items-center gap-4">
               <div className="border border-secondary rounded-full flex px-3 py-1 items-center bg-secondary/5">
                 <button className="hover:scale-120 transition-all hover:cursor-pointer text-primary" onClick={() => VoteToArticle(true)}>
                   <Icon icon={currentArticleVote != undefined && currentArticleVote.positive ? "bxs:up-arrow" : "bx:up-arrow"} fontSize={20}/>

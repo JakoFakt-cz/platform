@@ -14,6 +14,7 @@ export interface ArticleModel {
   };
   body: {
     content: string;
+    sources: SourceModel[];
   };
   meta: {
     views: number;
@@ -21,6 +22,10 @@ export interface ArticleModel {
     comments: CommentModel[];
     votes: VoteModel[];
   };
+}
+
+export interface SourceModel {
+  link: string;
 }
 
 export async function RetrieveArticlesFromBackend({
@@ -87,11 +92,13 @@ export async function CreateArticleToBackend({
   title,
   headline,
   content,
+  sources,
 }: {
   authorId: string,
   title: string,
   headline: string,
   content: string,
+  sources: string[]
 }): Promise<ArticleModel> {
   const res = await fetch(
     `${process.env.BACKEND_URL}/articles/create`,
@@ -102,6 +109,7 @@ export async function CreateArticleToBackend({
         title: title,
         headline: headline,
         content: content,
+        sources: sources,
       }),
       headers: {
         'Content-Type': 'application/json',
