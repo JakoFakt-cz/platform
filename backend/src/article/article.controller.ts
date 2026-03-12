@@ -38,7 +38,13 @@ export class ArticleController {
     @Req() req: Request & { user: { userId: string } },
     @Body() dto: CreateArticleDto,
   ): Promise<void> {
-    await this.service.createArticle(dto.title, req.user.userId, dto.body);
+    await this.service.createArticle(
+      dto.title,
+      dto.headline,
+      req.user.userId,
+      dto.content,
+      dto.sources,
+    );
   }
 
   @Get('exact')

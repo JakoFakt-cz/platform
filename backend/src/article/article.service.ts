@@ -16,7 +16,6 @@ export class ArticleService {
     @InjectModel(Source.name) private sourceModel: Model<Source>,
   ) {}
 
-  // TODO: verify user session
   async createArticle(
     title: string,
     headline: string,
