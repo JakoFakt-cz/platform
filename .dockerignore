@@ -1,0 +1,44 @@
+# Dependencies
+**/node_modules
+
+# Build outputs
+**/.next
+**/dist
+**/.turbo
+
+# Env files (kopírují se explicitně v Dockerfile)
+**/.env.local
+**/.env.*.local
+
+# Version control
+.git
+.gitignore
+
+# Linting / editor
+.eslintcache
+**/.eslintcache
+.prettierignore
+.editorconfig
+**/*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+**/docker-compose*.yml
+Dockerfile
+**/*.Dockerfile
+.dockerignore
+
+# Logs
+**/logs
+**/*.log
+**/npm-debug.log*
+
+# Tests
+**/__tests__
+**/*.test.ts
+**/*.spec.ts
+**/.jest-cache
+**/coverage
