@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from 'next/headers';
 import { ArticleModel } from "./article";
 import { UserModel } from "./user";
 import { VoteModel } from "./vote";
@@ -39,6 +40,9 @@ export async function AddCommentToArticle({
     },
   };
   
+  const cookieStore = await cookies();
+  const token = cookieStore.get('jako_access_token')?.value;
+
   const res = await fetch(
     `${process.env.BACKEND_URL}/articles/comment`,
     {
@@ -46,6 +50,7 @@ export async function AddCommentToArticle({
       body: JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json',
+        Cookie: `jako_access_token=${token}`,
       },
     },
   );
