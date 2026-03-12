@@ -1,4 +1,4 @@
-import { IsMongoId, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ArrayMinSize, IsArray, IsMongoId, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateArticleDto {
   @IsString()
@@ -19,4 +19,9 @@ export class CreateArticleDto {
   @IsNotEmpty()
   @MinLength(120)
   readonly content!: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ArrayMinSize(1)
+  readonly sources!: string[];
 }

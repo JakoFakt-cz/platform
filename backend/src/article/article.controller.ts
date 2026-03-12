@@ -32,7 +32,13 @@ export class ArticleController {
   @Post('create')
   @Throttle({ default: { limit: 50, ttl: 60 * 5 } })
   async createNewArticle(@Body() dto: CreateArticleDto): Promise<Article | null> {
-    return await this.service.createArticle(dto.title, dto.headline, dto.authorId, dto.content);
+    return await this.service.createArticle(
+      dto.title,
+      dto.headline,
+      dto.authorId,
+      dto.content,
+      dto.sources,
+    );
   }
 
   @Get('exact')

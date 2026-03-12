@@ -13,6 +13,8 @@ export default function NewPostPage() {
   const [title, setTitle] = useState<string>('');
   const [headline, setHeadline] = useState<string>('');
   const [content, setContent] = useState<string>('');
+  const [sourcesInput, setSourcesInput] = useState('');
+  const [sources, setSources] = useState<string[]>([]);
   const [processing, setProcessing] = useState<boolean>(false);
   const userId = '69492c68e2b63e716b2dd9d1'; // TODO: replace with real user ID
 
@@ -24,14 +26,19 @@ export default function NewPostPage() {
         authorId: userId, 
         title, 
         headline,
-        content 
+        content,
+        sources
       });
+      if (article === null) {
+        toast.error(`Nepodařilo se vytvořit článek.`)
+        return;
+      }
       toast.info('Přesměrovávám na článek...')
       await new Promise((resolve) => setTimeout(resolve, 1000));
       router.push(`/article?id=${article._id}`)
       setProcessing(false);
     } catch (error) {
-      console.error('Failed to send comment vote:', error);
+      console.error('Failed to create article:', error);
       setProcessing(false);
     }
   };
@@ -94,6 +101,24 @@ export default function NewPostPage() {
                 maxLength={3000}
                 value={content}
                 onChange={(e) => setContent(e.currentTarget.value)}
+              />
+            </div>
+            <div className="w-full">
+              <label htmlFor="content" className="font-semibold text-sm">Zdroje (alespoň 1 je povinný, pro přidání nového použijte ENTER)</label>
+              <textarea 
+                id="sources" 
+                className="min-h-40 bg-white border-primary border rounded-lg py-2 w-full px-3 font-medium outline-none" 
+                placeholder="Napište zdroje..."
+                minLength={20}
+                value={sourcesInput}
+                onChange={(e) => {
+                  setSourcesInput(e.currentTarget.value);
+                  setSources(
+                    e.currentTarget.value.split('\n')
+                      .map(line => line.trim())
+                      .filter(line => line.length > 0)
+                  );
+                }}
               />
             </div>
             <div className="w-full items-center flex justify-end">
