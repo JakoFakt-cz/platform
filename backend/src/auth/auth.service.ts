@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   ServiceUnavailableException,
   UnauthorizedException,
@@ -81,8 +82,17 @@ export class AuthService {
       throw new UnauthorizedException('Wrong credentials');
     }
 
+    // Check if user is verified
+    if (!user.emailVerified) {
+      await this.generateOTPCode(user.email);
+      throw new ForbiddenException({
+        error: 'unverified_account',
+        email: user.email,
+      });
+    }
+
     // Generate JWT token
-    return this.generateUserTokens(user._id as Types.ObjectId);
+    return this.generateUserTokens(user._id);
   }
 
   async refreshTokens(refreshToken: string) {
@@ -113,13 +123,18 @@ export class AuthService {
   }
 
   async generateOTPCode(email: string): Promise<void> {
+    const user = await this.UserModel.findOne({ email: { $eq: email } });
+    if (!user || user.emailVerified) {
+      return; // Do not send OTP to non-existent or already verified users to prevent spam
+    }
+
     const code = crypto.randomInt(100000, 999999);
 
     const saltRounds = this.configService.get<number>('auth.hashSaltRounds') || 12;
     const hashedCode = await bcrypt.hash(code.toString(), Number(saltRounds));
 
     await this.OTPModel.deleteMany({
-      email,
+      email: { $eq: email },
     });
 
     await this.OTPModel.create({
@@ -130,9 +145,9 @@ export class AuthService {
     await this.mailService.sendVerifyEmail(email, code.toString());
   }
 
-  async verifyOTPCode(email: string, code: string): Promise<void> {
+  async verifyOTPCode(email: string, code: string) {
     const emailOTP = await this.OTPModel.findOne({
-      email,
+      email: { $eq: email },
     });
 
     if (!emailOTP) {
@@ -141,8 +156,13 @@ export class AuthService {
     const isCodeValid = await bcrypt.compare(code.toString(), emailOTP.code);
 
     if (isCodeValid) {
-      await this.OTPModel.deleteMany({ email });
-      await this.UserModel.findOneAndUpdate({ email }, { emailVerified: true });
+      await this.OTPModel.deleteMany({ email: { $eq: email } });
+      const user = await this.UserModel.findOneAndUpdate(
+        { email: { $eq: email } },
+        { emailVerified: true },
+      );
+      if (!user) throw new BadRequestException('User not found');
+      return this.generateUserTokens(user._id);
     } else {
       throw new UnauthorizedException('Invalid or expired OTP code');
     }
@@ -189,7 +209,20 @@ export class AuthService {
       );
     }
 
-    return this.generateUserTokens(user._id as Types.ObjectId);
+    return this.generateUserTokens(user._id);
+  }
+
+  async logout(refreshToken: string) {
+    const lookUpHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    await this.RefreshTokenModel.deleteOne({ token: lookUpHash });
+  }
+
+  async getUserEmail(userId: string): Promise<string> {
+    const user = await this.UserModel.findById(userId).select('email').lean().exec();
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return user.email;
   }
 
   async getMe(userId: string) {

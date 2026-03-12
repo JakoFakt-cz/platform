@@ -74,13 +74,21 @@ export function AuthProvider({
     setIsAuthenticated(value);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${backendUrl}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {}
     setIsAuthenticated(false);
     setUser(null);
-  }, []);
+  }, [backendUrl]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, setAuthenticated, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, user, setAuthenticated, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

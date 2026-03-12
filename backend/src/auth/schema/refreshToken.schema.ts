@@ -9,7 +9,7 @@ export class RefreshToken extends Document {
   @Prop({ required: true, type: Types.ObjectId })
   userId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ required: true, expires: 0 })
   expiryDate: Date;
 }
 
