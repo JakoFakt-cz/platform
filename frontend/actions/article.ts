@@ -89,13 +89,11 @@ function addQueryParam(
 }
 
 export async function CreateArticleToBackend({
-  authorId,
   title,
   headline,
   content,
   sources,
 }: {
-  authorId: string;
   title: string;
   headline: string;
   content: string;
