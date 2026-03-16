@@ -55,11 +55,8 @@ ENV NODE_ENV=production
 RUN groupadd --system --gid 1001 nodejs && \
     useradd  --system --uid 1001 --gid nodejs nestjs
 
-COPY --from=builder --chown=nestjs:nodejs /app/backend/dist         ./backend/dist
-COPY --from=builder --chown=nestjs:nodejs /app/backend/node_modules ./backend/node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules         ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/package.json         ./package.json
-COPY --chown=nestjs:nodejs backend/.env   ./backend/.env
+COPY --from=builder --chown=nestjs:nodejs /app/backend/dist ./backend/dist
+COPY --chown=nestjs:nodejs backend/.env ./backend/.env
 
 USER nestjs
 EXPOSE 4000
