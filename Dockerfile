@@ -1,36 +1,27 @@
 # ─────────────────────────────────────────────
-#  Stage 1: base
+#  Stage 1: builder – install deps + build
 # ─────────────────────────────────────────────
-FROM oven/bun:1 AS base
+FROM oven/bun:1 AS builder
 WORKDIR /app
 
-# ─────────────────────────────────────────────
-#  Stage 2: install – root + all workspace deps
-# ─────────────────────────────────────────────
-FROM base AS installer
-
+# Copy manifests first for better layer caching
 COPY bun.lock package.json turbo.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json  ./backend/
 
-RUN bun install --frozen-lockfile
+# Install all dependencies (root + workspaces)
+RUN bun install --frozen-lockfile && \
+    cd frontend && bun install --frozen-lockfile && \
+    cd /app/backend && bun install --frozen-lockfile
 
-# ─────────────────────────────────────────────
-#  Stage 3: builder – builds both apps
-# ─────────────────────────────────────────────
-FROM base AS builder
-
-COPY --from=installer /app/node_modules          ./node_modules
-COPY --from=installer /app/frontend/node_modules ./frontend/node_modules
-COPY --from=installer /app/backend/node_modules  ./backend/node_modules
-
+# Copy full source
 COPY . .
 
-# Build both apps in parallel via Turborepo
+# Build both apps via Turborepo
 RUN bunx turbo run build --filter=frontend --filter=backend
 
 # ─────────────────────────────────────────────
-#  Stage 4a: frontend runner
+#  Stage 2a: frontend runner
 # ─────────────────────────────────────────────
 FROM oven/bun:1-slim AS frontend
 
@@ -54,7 +45,7 @@ ENV HOSTNAME="0.0.0.0"
 CMD ["bun", "frontend/server.js"]
 
 # ─────────────────────────────────────────────
-#  Stage 4b: backend runner
+#  Stage 2b: backend runner
 # ─────────────────────────────────────────────
 FROM oven/bun:1-slim AS backend
 
