@@ -9,7 +9,7 @@ services:
     env_file:
       - ./frontend/.env
     environment:
-    - BACKEND_URL=http://backend:4000
+    - BACKEND_URL=${BACKEND_URL}
     depends_on:
       - backend
     restart: unless-stopped
@@ -23,4 +23,17 @@ services:
       - "4000:4000"
     env_file:
       - ./backend/.env
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - ACCESS_TOKEN_EXPIRES=${ACCESS_TOKEN_EXPIRES}
+      - REFRESH_TOKEN_EXPIRATION=${REFRESH_TOKEN_EXPIRATION}
+      - PASSWORD_HASH_SALT_ROUNDS=${PASSWORD_HASH_SALT_ROUNDS}
+      - OAUTH_SUCCESS_REDIRECT_URL=${OAUTH_SUCCESS_REDIRECT_URL}
+      - GOOGLE_OAUTH_REDIRECT_URL=${GOOGLE_OAUTH_REDIRECT_URL}
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
+      - MONGO_CONNECTION_STRING=${MONGO_CONNECTION_STRING}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
     restart: unless-stopped
