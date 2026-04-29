@@ -1,5 +1,6 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { CommentModel } from './comment';
 import { UserModel } from './user';
 import { VoteModel } from './vote';
@@ -88,37 +89,37 @@ function addQueryParam(
 }
 
 export async function CreateArticleToBackend({
-  authorId,
   title,
   headline,
   content,
   sources,
 }: {
-  authorId: string,
-  title: string,
-  headline: string,
-  content: string,
-  sources: string[]
+  title: string;
+  headline: string;
+  content: string;
+  sources: string[];
 }): Promise<ArticleModel> {
-  const res = await fetch(
-    `${process.env.BACKEND_URL}/articles/create`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ 
-        authorId: authorId,
-        title: title,
-        headline: headline,
-        content: content,
-        sources: sources,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const cookieStore = await cookies();
+  const token = cookieStore.get('jako_access_token')?.value;
+
+  const res = await fetch(`${process.env.BACKEND_URL}/articles/create`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title: title,
+      headline: headline,
+      content: content,
+      sources: sources,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: `jako_access_token=${token}`,
+    },
+  });
 
   if (!res.ok) {
-    throw new Error(`Failed to create article with title ${title}. ${await res.text()} ${res.statusText}`);
+    throw new Error(
+      `Failed to create article with title ${title}. ${await res.text()} ${res.statusText}`
+    );
   }
 
   return res.json();
