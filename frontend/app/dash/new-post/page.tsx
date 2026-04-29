@@ -122,7 +122,7 @@ export default function NewPostPage() {
               />
             </div>
             <div className="w-full">
-              <label htmlFor="content" className="font-semibold text-sm">
+              <label htmlFor="sources" className="font-semibold text-sm">
                 Zdroje (alespoň 1 je povinný, pro přidání nového použijte ENTER)
               </label>
               <textarea
