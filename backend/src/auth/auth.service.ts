@@ -18,7 +18,6 @@ import * as crypto from 'crypto';
 import { OTP } from './schema/otp.schema';
 import { MailService } from '../mail/mail.service';
 import { OAuthUserDto } from './dto/oauthUser.dto';
-import * as uuid from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -281,7 +280,7 @@ export class AuthService {
     }
 
     for (let i = 0; i < 5; i++) {
-      const randomSuffix = uuid.v4().split('-')[0];
+      const randomSuffix = crypto.randomUUID().split('-')[0];
       const newUsername = `${baseName}-${randomSuffix}`;
 
       if (await this.isUsernameAvailable(newUsername)) {
