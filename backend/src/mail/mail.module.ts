@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
           },
         },
         defaults: {
-          from: '"No reply" <' + configService.get('mail.user') + '>',
+          from: '"No reply" <' + configService.get('mail.from') + '>',
         },
       }),
       inject: [ConfigService],
