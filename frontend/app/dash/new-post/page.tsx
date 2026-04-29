@@ -71,10 +71,10 @@ export default function NewPostPage() {
             <Icon icon="mdi:pencil" className="text-5xl" />
             <div>
               <h1 className="text-3xl font-bold leading-tight">
-                Nový příspěvěk
+                Nový příspěvek
               </h1>
               <p className="text-lg text-primary/70 leading-tight">
-                Napište nový, zajímavý příspěvěk!
+                Napište nový, zajímavý příspěvek!
               </p>
             </div>
           </div>
