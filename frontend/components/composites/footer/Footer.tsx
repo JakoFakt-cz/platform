@@ -14,7 +14,7 @@ const Footer = () => {
                         className="h-auto"
                     />
                     <p className="text-sm md:text-base leading-relaxed opacity-90">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        „Jako fakt?“ je otázka, kterou chceme naučit pokládat každého uživatele internetu.
                     </p>
 
                     <div className="flex flex-wrap gap-3">
@@ -23,7 +23,7 @@ const Footer = () => {
                             <span>Zpět nahoru</span>
                         </a>
                         <div className="flex gap-2">
-                            <a href="/" className="flex items-center border border-white/30 font-semibold rounded-xl aspect-square p-2.5 hover:bg-white hover:text-primary transition-all cursor-pointer text-xl">
+                            <a href="https://www.instagram.com/jakofakt.cz/" className="flex items-center border border-white/30 font-semibold rounded-xl aspect-square p-2.5 hover:bg-white hover:text-primary transition-all cursor-pointer text-xl">
                                 <Icon icon="mdi:instagram"/>
                             </a>
                             <a href="https://discord.gg/pjgjHHUpZV" className="flex items-center border border-white/30 font-semibold rounded-xl aspect-square p-2.5 hover:bg-white hover:text-primary transition-all cursor-pointer text-xl">
