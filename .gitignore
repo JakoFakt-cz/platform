@@ -11,6 +11,6 @@
 **/.next
 **/bun.lock
 
-*.env
+*.env.*
 
 **/.vscode
