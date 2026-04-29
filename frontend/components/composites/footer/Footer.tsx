@@ -37,6 +37,7 @@ const Footer = () => {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-8 lg:gap-16">
+                    {/*
                     <div className="flex flex-col gap-4">
                         <h2 className="font-work text-xl font-bold">Kategorie</h2>
                         <nav className="flex flex-col gap-2 opacity-80">
@@ -56,6 +57,7 @@ const Footer = () => {
                             <a className="hover:opacity-70 transition-colors cursor-pointer text-sm md:text-base">Item 1</a>
                         </nav>
                     </div>
+                    */}
                 </div>
             </div>
 
