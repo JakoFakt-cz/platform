@@ -58,6 +58,7 @@ export default function DashPage() {
               href="/dash/profile"
               icon="mdi:user"
               title="Editace profilu"
+              disabled
             >
               <span>
                 Upravte své kontaktní údaje, nahrajte profilovou fotku nebo
@@ -68,6 +69,7 @@ export default function DashPage() {
               href="/dash/privacy"
               icon="mdi:shield-lock"
               title="Soukromí a bezpečnost"
+              disabled
             >
               <span>
                 Správa aktivních relací, změna hesla a nastavení viditelnosti
@@ -78,6 +80,7 @@ export default function DashPage() {
               href="/dash/activity"
               icon="mdi:history"
               title="Obsah a interakce"
+              disabled
             >
               <span>
                 Přehled vašich příspěvků, komentářů a historie aktivity na
@@ -88,6 +91,7 @@ export default function DashPage() {
               href="/dash/settings"
               icon="mdi:settings"
               title="Nastavení"
+              disabled
             >
               <span>Konfigurace preferencí účtu, notifikace a další.</span>
             </DashboardCard>
@@ -95,6 +99,7 @@ export default function DashPage() {
               href="/support"
               icon="mdi:help-circle"
               title="Podpora"
+              disabled
             >
               <span>
                 Potřebujete pomoc? Kontaktujte nás nebo prozkoumejte nápovědu.
