@@ -9,7 +9,9 @@ export class MailService {
     await this.mailService.sendMail({
       to: email,
       subject: 'Ověřte svůj email',
-      html: `<h2>Jako fakt jste to vy?</h2><h1>Ověřte svůj e-mail</h1><h3>${verifyCode}</h3>`,
+      html: `
+                <h2>Jako fakt jste to vy?</h2><h1>Ověřte svůj e-mail</h1><h3>${verifyCode}</h3>
+            `,
     });
   }
 }
