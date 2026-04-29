@@ -47,7 +47,7 @@ const Menu = () => {
           <div className={'hidden lg:flex flex-row items-center gap-4'}>
             <MenuItem label={'Nejnovější'} href={'/'} />
             {/*<MenuItem label={'Kategorie'} isMulti items={testItems} />*/}
-            <MenuItem label={'O projektu'} isMulti items={testItems} />
+            {/*<MenuItem label={'O projektu'} isMulti items={testItems} />*/}
           </div>
         </nav>
 
