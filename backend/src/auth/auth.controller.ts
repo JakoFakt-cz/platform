@@ -26,7 +26,7 @@ export class AuthController {
     const isProduction = this.configService.get<string>('app.env') === 'production';
     const cookieDomain = this.configService.get<string>('auth.cookieDomain');
     const accessTokenExpiration =
-      this.configService.get<number>('auth.accessTokenExpiration') || 1800;
+      Number(this.configService.get('auth.accessTokenExpiration')) || 1800;
 
     response.cookie('jako_refresh_token', refreshToken, {
       httpOnly: true,

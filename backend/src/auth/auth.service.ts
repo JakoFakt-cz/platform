@@ -239,7 +239,7 @@ export class AuthService {
 
   private async generateUserTokens(userId: Types.ObjectId) {
     const accessTokenExpiration =
-      this.configService.get<number>('auth.accessTokenExpiration') || 30 * 60;
+      Number(this.configService.get('auth.accessTokenExpiration')) || 30 * 60;
     const accessToken = this.jwtService.sign({ userId }, { expiresIn: accessTokenExpiration });
 
     const refreshToken = crypto.randomBytes(32).toString('hex');
