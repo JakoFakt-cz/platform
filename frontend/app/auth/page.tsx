@@ -3,7 +3,7 @@ import AuthForm from '@/components/composites/AuthForm';
 import { Suspense } from 'react';
 
 export default function AuthPage() {
-  const backendLink = process.env.BACKEND_URL;
+  const backendLink = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL;
 
   return (
     <main className={'w-full min-h-screen relative'}>

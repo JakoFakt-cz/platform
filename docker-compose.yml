@@ -9,7 +9,8 @@ services:
     env_file:
       - ./frontend/.env
     environment:
-    - BACKEND_URL=${BACKEND_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
     depends_on:
       - backend
     restart: unless-stopped
@@ -24,6 +25,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
+      - FRONTEND_URL=${FRONTEND_URL}
       - JWT_SECRET=${JWT_SECRET}
       - ACCESS_TOKEN_EXPIRES=${ACCESS_TOKEN_EXPIRES}
       - REFRESH_TOKEN_EXPIRATION=${REFRESH_TOKEN_EXPIRATION}
