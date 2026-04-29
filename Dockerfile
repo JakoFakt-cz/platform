@@ -56,6 +56,7 @@ RUN groupadd --system --gid 1001 nodejs && \
     useradd  --system --uid 1001 --gid nodejs nestjs
 
 COPY --from=builder --chown=nestjs:nodejs /app/backend/dist ./backend/dist
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs backend/.env ./backend/.env
 
 USER nestjs
