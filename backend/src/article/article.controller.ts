@@ -37,8 +37,8 @@ export class ArticleController {
   async createNewArticle(
     @Req() req: Request & { user: { userId: string } },
     @Body() dto: CreateArticleDto,
-  ): Promise<void> {
-    await this.service.createArticle(
+  ): Promise<Article> {
+    return await this.service.createArticle(
       dto.title,
       dto.headline,
       req.user.userId,

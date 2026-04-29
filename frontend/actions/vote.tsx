@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from 'next/headers';
 import { ArticleModel } from "./article";
 import { UserModel } from "./user";
 
@@ -29,6 +30,9 @@ export async function AddVoteToArticle({
     articleId,
   };
   
+  const cookieStore = await cookies();
+  const token = cookieStore.get('jako_access_token')?.value;
+
   const res = await fetch(
     `${process.env.BACKEND_URL}/articles/vote`,
     {
@@ -36,6 +40,7 @@ export async function AddVoteToArticle({
       body: JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json',
+        Cookie: `jako_access_token=${token}`,
       },
     },
   );
@@ -75,6 +80,9 @@ export async function AddVoteToComment({
     commentId,
   };
   
+  const cookieStore = await cookies();
+  const token = cookieStore.get('jako_access_token')?.value;
+
   const res = await fetch(
     `${process.env.BACKEND_URL}/articles/comment/vote`,
     {
@@ -82,6 +90,7 @@ export async function AddVoteToComment({
       body: JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json',
+        Cookie: `jako_access_token=${token}`,
       },
     },
   );
