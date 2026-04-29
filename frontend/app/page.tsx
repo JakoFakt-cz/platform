@@ -55,8 +55,6 @@ export default function Dashboard() {
               'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
             }
           >
-            {/* TODO: Doladit design hlavního textu */}
-            {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
             Odhalujeme, <span className={'underline'}>jak je to</span>,<br />
             <span className={'text-accent'}>doopravdy</span>
           </h2>
@@ -101,10 +99,8 @@ export default function Dashboard() {
               'text-7xl text-center text-balance font-bold text-primary text-shadow-lg z-5'
             }
           >
-            {/* TODO: Doladit design hlavního textu */}
-            {/* NÁPAD: Text "dezinformace" by se mohl nějak měnit i na "podvody", "lži" atd. */}
-            tohle <span className={'underline'}>je</span>,<br />
-            <span className={'text-accent'}>dokonalé hero</span>
+            Odhalujeme, <span className={'underline'}>jak je to</span>,<br />
+            <span className={'text-accent'}>doopravdy</span>
           </h2>
           <Search />
         </section>
